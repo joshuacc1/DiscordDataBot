@@ -4,11 +4,13 @@ from bokeh.io import export_png, export_svgs
 from bokeh.models import ColumnDataSource, DataTable, TableColumn
 import matplotlib.pyplot as plt
 
+
 from discord.ext import commands
 
 
 #client = discord.Client()
 GUILD = "Prometheus's server"
+TOKEN = ''
 
 bot = commands.Bot(command_prefix='#%')
 
@@ -55,7 +57,7 @@ async def get_police_shooting_data(ctx,*args):
 def querypoliceshooting(*args):
     iyear=int(args[0])
     fyear=int(args[1])
-    df = pandas.read_csv('Data/Police_Shootings_By_Race.csv')
+    df = pandas.read_csv('../Data/Police_Shootings_By_Race.csv')
     if len(args) >=3:
         columns=list(args[2:len(args)])
         columns.insert(0,'Year')
@@ -92,6 +94,8 @@ def save_df_as_matplotlib_plot(df,path):
 if __name__=="__main__":
     pass
     #print(querypoliceshooting(2018,2020,'White_armed'))
+with open('../TOKEN' ,'r') as f:
+    TOKEN=f.readline()
 
-bot.run('ODM0NjE0MjgyMjU5OTIyOTc0.YIDdHw.xBCMT9FrtayUrFEY8f9FzltdN2w')
-#client.run('ODM0NjE0MjgyMjU5OTIyOTc0.YIDdHw.xBCMT9FrtayUrFEY8f9FzltdN2w')
+bot.run(TOKEN)
+#client.run(TOKEN)
