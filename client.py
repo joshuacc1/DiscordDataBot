@@ -1,9 +1,15 @@
+import sys
+
 import discord
 import pandas
+import numpy
 from bokeh.io import export_png, export_svgs
 from bokeh.models import ColumnDataSource, DataTable, TableColumn
 import matplotlib.pyplot as plt
-
+import feedparser
+import json
+import urllib.request
+import datetime
 
 from discord.ext import commands
 
@@ -45,7 +51,7 @@ async def getdata(ctx,arg1 : int,arg2 : int):
     output=x[arg1:arg2]
     await ctx.send(' '.join([str(x) for x in output]))
 
-@bot.command(name='police_shootings',help='To query, type {from year, to year, column a, column b, ...} from available columns White_armed,White_unarmed,black_armed,black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
+@bot.command(name='police_shootings',help='To query, type {from year, to year, column a, column b, ...} from available columns Year,White_armed,White_unarmed,Black_armed,Black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
 async def get_police_shooting_data(ctx,*args):
     res=querypoliceshooting(*args)
     save_df_as_matplotlib_plot(res, 'dataimg.jpg')
@@ -54,21 +60,69 @@ async def get_police_shooting_data(ctx,*args):
         await ctx.send(file=picture)
     #await ctx.send('That data given may indicate a different conclusion than any preconception you may have. in any case... here is your data:' + '\n' + res.to_string(index=False,justify='center') + '\n' + 'Facts dont care about your feelings')
 
+@bot.command(name='covid_statistics')
+async def covid_statistics(ctx,*args):
+    outputtype=args[0]
+    country=args[1]
+    startdate=datetime.datetime.strptime(args[2],"%Y-%m-%d")
+    enddate=datetime.datetime.strptime(args[3],"%Y-%m-%d")
+    if len(args) >= 4:
+        columns=[x.lower() for x in list(args[4:len(args)])]
+    else:
+        columns=['new_cases']
+    data=query_covid_statistics(country,startdate,enddate,columns)
+    if outputtype=='texttable':
+        await ctx.send(data)
+    elif outputtype=='imagetable':
+        save_df_as_matplotlib_plot(data,'Data/covid.jpg')
+        with open('Data/covid.jpg','rb') as f:
+            image=discord.File(f)
+            await ctx.send(file=image)
+    elif outputtype=='imageplot':
+        save_df_as_matplotlib_graph(data, 'Data/covid.jpg')
+        with open('Data/covid.jpg','rb') as f:
+            image=discord.File(f)
+            await ctx.send(file=image)
+
 def querypoliceshooting(*args):
     iyear=int(args[0])
     fyear=int(args[1])
-    df = pandas.read_csv('../Data/Police_Shootings_By_Race.csv')
+    df = pandas.read_csv('Data/Police_Shootings_By_Race.csv')
     if len(args) >=3:
         columns=list(args[2:len(args)])
         columns.insert(0,'Year')
-        if all(x in df.columns for x in columns):
-            res = df[columns][df['Year']>=iyear][df['Year']<=fyear]
+        ttable=[x.lower() in [y.lower() for y in columns] for x in df.columns]
+        table=df.columns[ttable]
+        print(table)
+        #if all(x in df.columns for x in columns):
+        res = df[table][df['Year']>=iyear][df['Year']<=fyear]
     else:
         res=df[df['Year']>=iyear][df['Year']<=fyear]
 
     print(res)
     save_df_as_matplotlib_plot(res, 'dataimg.png')
     return res
+
+def query_covid_statistics(country,sdate,edate,columns):
+    with urllib.request.urlopen('https://covid.ourworldindata.org/data/owid-covid-data.json') as url:
+        data=json.loads(url.read().decode())
+
+    def columnvalue(item,col,default):
+        if col in item:
+            return item[col]
+        else:
+            return default
+    dataquery={'date':[]}
+    for col in columns:
+        dataquery[col]=[]
+    for x in data[country]['data']:
+        date=[int(w) for w in x['date'].split('-')]
+        linedate=datetime.datetime(date[0],date[1],date[2])
+        if linedate>=sdate and linedate<edate:
+            for col in dataquery:
+                dataquery[col].append(columnvalue(x,col,None))
+    data=pandas.DataFrame(dataquery)
+    return data
 
 def save_df_as_image(df,path):
     source=ColumnDataSource(df)
@@ -89,13 +143,36 @@ def save_df_as_matplotlib_plot(df,path):
     ax.table(cellText=df.values,colLabels=df.columns,loc='center',cellLoc='center',colColours=['gray']*len(df.columns))
     fig.tight_layout()
     plt.savefig(path)
+    #plt.show()
 
+def save_df_as_matplotlib_graph(df,path):
+    fig,ax=plt.subplots()
+    fig.patch.set_visible(False)
+    #ax.axis('off')
+    #ax.axis('tight')
+    for col in df.columns[1:]:
+        ax.plot([x for x in df['date']],[x for x in df[col]])
+    ax.set_xticklabels([x for x in df['date']],rotation=90)
+    fig.tight_layout()
+    plt.savefig(path)
+    #plt.show()
+
+def main(args):
+    TOKENKEYFILE=args[1]
+    with open(TOKENKEYFILE, 'r') as f:
+        global TOKEN
+        TOKEN = f.readline()
+    bot.run(TOKEN)
 
 if __name__=="__main__":
     pass
-    #print(querypoliceshooting(2018,2020,'White_armed'))
-with open('../TOKEN' ,'r') as f:
-    TOKEN=f.readline()
-
-bot.run(TOKEN)
+    #res=querypoliceshooting(2018,2020,'white_armed','black_armed','white_unarmed','black_unarmed')
+    #print(res)
+    #save_df_as_matplotlib_plot(res,'dataimage.jpg')
+    #sdate=datetime.datetime(2021,2,10)
+    #edate=datetime.datetime(2021,3,10)
+    #data=query_covid_statistics('USA',sdate,edate,['new_cases','new_deaths'])
+    #save_df_as_matplotlib_graph(data, 'dataimage.jpg')
+    #main(['','TOKEN'])
+main(sys.argv)
 #client.run(TOKEN)
