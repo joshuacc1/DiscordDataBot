@@ -1,6 +1,7 @@
 import sys
 
 import discord
+import matplotlib.dates
 import pandas
 import numpy
 from bokeh.io import export_png, export_svgs
@@ -43,14 +44,6 @@ async def kitten(ctx):
         picture=discord.File(f)
         await ctx.send(file=picture)
 
-
-@bot.command(name='get_data')
-async def getdata(ctx,arg1 : int,arg2 : int):
-    print(arg1,arg2)
-    x=[1,2,3,4,5,6]
-    output=x[arg1:arg2]
-    await ctx.send(' '.join([str(x) for x in output]))
-
 @bot.command(name='police_shootings',help='To query, type {from year, to year, column a, column b, ...} from available columns Year,White_armed,White_unarmed,Black_armed,Black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
 async def get_police_shooting_data(ctx,*args):
     res=querypoliceshooting(*args)
@@ -79,9 +72,12 @@ async def covid_statistics(ctx,*args):
             image=discord.File(f)
             await ctx.send(file=image)
     elif outputtype=='imageplot':
-        save_df_as_matplotlib_graph(data, 'Data/covid.jpg')
+        save_df_as_matplotlib_graph(data,'Data/covid.jpg')
         with open('Data/covid.jpg','rb') as f:
             image=discord.File(f)
+            embed=discord.Embed()
+            embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+            await ctx.send(embed=embed)
             await ctx.send(file=image)
 
 def querypoliceshooting(*args):
@@ -148,11 +144,13 @@ def save_df_as_matplotlib_plot(df,path):
 def save_df_as_matplotlib_graph(df,path):
     fig,ax=plt.subplots()
     fig.patch.set_visible(False)
-    #ax.axis('off')
-    #ax.axis('tight')
+    daterange = [datetime.datetime.strptime(x, "%Y-%m-%d").date() for x in df['date']]
     for col in df.columns[1:]:
-        ax.plot([x for x in df['date']],[x for x in df[col]])
-    ax.set_xticklabels([x for x in df['date']],rotation=90)
+        ax.plot(daterange,[x for x in df[col]],label=col)
+    intv=(daterange[-1]-daterange[0])/10
+    ax.xaxis.set_major_locator(matplotlib.dates.DayLocator(interval=intv.days))
+    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%m-%d-%Y"))
+    ax.tick_params(axis='x',labelrotation=90)
     fig.tight_layout()
     plt.savefig(path)
     #plt.show()
@@ -168,11 +166,11 @@ if __name__=="__main__":
     pass
     #res=querypoliceshooting(2018,2020,'white_armed','black_armed','white_unarmed','black_unarmed')
     #print(res)
-    #save_df_as_matplotlib_plot(res,'dataimage.jpg')
-    #sdate=datetime.datetime(2021,2,10)
-    #edate=datetime.datetime(2021,3,10)
-    #data=query_covid_statistics('USA',sdate,edate,['new_cases','new_deaths'])
-    #save_df_as_matplotlib_graph(data, 'dataimage.jpg')
+    # save_df_as_matplotlib_plot(res,'dataimage.jpg')
+    # sdate=datetime.datetime(2020,3,1)
+    # edate=datetime.datetime(2021,4,26)
+    # data=query_covid_statistics('USA',sdate,edate,['new_cases','new_deaths'])
+    # save_df_as_matplotlib_graph(data, 'dataimage.jpg')
     #main(['','TOKEN'])
 main(sys.argv)
 #client.run(TOKEN)
