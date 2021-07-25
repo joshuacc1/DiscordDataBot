@@ -7,7 +7,6 @@ import numpy
 from bokeh.io import export_png, export_svgs
 from bokeh.models import ColumnDataSource, DataTable, TableColumn
 import matplotlib.pyplot as plt
-import feedparser
 import json
 import urllib.request
 import datetime

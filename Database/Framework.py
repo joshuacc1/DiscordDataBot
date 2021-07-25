@@ -1,5 +1,4 @@
 
-
 class xtof():
     def __init__(self,sin,sout):
         self.sin=sin if sin else set()
@@ -44,5 +43,25 @@ if __name__ == "__main__":
     for line in f.readlines():
         linearr = line.split(',')
         for hind in range(len(header)):
-            new=xtof({year,header[hind],linearr[0]},{linearr[hind+1]})
+            new=xtof({"Date",header[hind],linearr[0] + "-1-1"},{linearr[hind+1]})
+            ff.addtopot(new)
+
+    f = open("../Data/united-states-population-2021-05-13.csv",'r')
+    for i in range(1,16):
+        f.readline()
+
+    header=f.readline()
+    header=header.strip("\n")
+    header = header.split(',')
+    header = [x.strip() for x in header]
+    year = header.pop(0)
+    firstline=f.readline()
+    for line in f.readlines():
+        line=line.strip("\n")
+        line=line.strip()
+        linearr = line.split(',')
+        date=linearr[0]
+        date=date.split("-")
+        for hind in range(len(header)):
+            new=xtof({"Date",header[hind],linearr[0]},{linearr[hind+1]})
             ff.addtopot(new)
