@@ -46,9 +46,9 @@ if __name__ == "__main__":
             new=xtof({"Date",header[hind],linearr[0] + "-1-1"},{linearr[hind+1]})
             ff.addtopot(new)
 
-    f = open("../Data/united-states-population-2021-05-13.csv",'r')
-    for i in range(1,16):
-        f.readline()
+    f = open("../Data/csvData.csv",'r')
+    # for i in range(1,16):
+    #     f.readline()
 
     header=f.readline()
     header=header.strip("\n")
@@ -63,5 +63,5 @@ if __name__ == "__main__":
         date=linearr[0]
         date=date.split("-")
         for hind in range(len(header)):
-            new=xtof({"Date",header[hind],linearr[0]},{linearr[hind+1]})
+            new=xtof({"Date",header[hind].replace('"',''),linearr[0].replace('"','')  + "-1-1"},{linearr[hind+1].replace('"','')})
             ff.addtopot(new)
