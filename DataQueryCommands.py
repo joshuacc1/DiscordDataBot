@@ -1,7 +1,8 @@
 
 from discord.ext import commands
-from discord import File, Embed
+from discord import File, Embed, Color
 from Data import *
+from dailywirequery import query_daily_wire
 
 class data_query_commands(commands.Cog):
     def __init__(self, bot: commands.bot):
@@ -10,6 +11,12 @@ class data_query_commands(commands.Cog):
     @commands.command(name="kitten")
     async def kitten(self, ctx: commands.context):
         with open('Data/kitten_blog.jpg', 'rb') as f:
+            picture = File(f)
+            await ctx.send(file=picture)
+
+    @commands.command(name="puppy")
+    async def kitten(self, ctx: commands.context):
+        with open('Data/dog.jpg', 'rb') as f:
             picture = File(f)
             await ctx.send(file=picture)
 
@@ -47,6 +54,19 @@ class data_query_commands(commands.Cog):
                 embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
                 await ctx.send(embed=embed)
                 await ctx.send(file=image)
+
+    @commands.command(name="find_articles")
+    async def find_daily_wire_articles(self, ctx: commands.context, *args):
+        query = args[0]
+        results = query_daily_wire(query)
+        if results:
+            for res in results[0:2]:
+                embed = Embed(title=res[0], url=res[2], description=res[3][0:500],
+                              color=Color.blue())
+                embed.set_author(name=res[1], url = "https://www.dailywire.com/author/" + res[1].replace(' ', '-'))
+                await ctx.send(embed=embed)
+        else:
+            await ctx.send("No good articles found.")
 
     @commands.Bot.listen
     async def on_message(self, message):
