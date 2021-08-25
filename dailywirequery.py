@@ -1,18 +1,33 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from collections import defaultdict
 import feedparser
 from bs4 import BeautifulSoup
 from Database.DatabaseManagement import  feedsmanagement
+import json
 
-def query_daily_wire(query):
-    fm = feedsmanagement()
-    data = fm.getfeeds()
-    for item in data:
-        text=''
-        contents = item['content']
-        for content in contents:
-            text += clearhtml(content['value'])
-        item['ptext'] = text
+def query_daily_wire(query,database='mongodb',strength=0.1):
+    if database == 'mongodb':
+        fm = feedsmanagement()
+        data = fm.getfeeds()
+        for item in data:
+            text=''
+            contents = item['content']
+            for content in contents:
+                text += clearhtml(content['value'])
+            item['ptext'] = text
+    elif database == 'file':
+        with open('dailywirearticles.json') as f:
+            data = []
+            jsonload = json.load(f)
+            for item in jsonload:
+                data.append(jsonload[item])
+                contents = jsonload[item]['content']
+                text = ''
+                for content in contents:
+                    text += clearhtml(content['value'])
+                jsonload[item]['ptext'] = text
+
     articles = [x['ptext'] for x in data]
     query = [query]
     # f = open('Data/dailywirearticles.csv')
@@ -29,8 +44,62 @@ def query_daily_wire(query):
     res = [(data[enum_cs[i][0]]['title'],
             data[enum_cs[i][0]]['author'],
             data[enum_cs[i][0]]['link'],
-            articles[enum_cs[i][0]]) for i in range(len(enum_cs)) if enum_cs[i][1] > 0.1]
+            articles[enum_cs[i][0]]) for i in range(len(enum_cs)) if enum_cs[i][1] > strength]
     return res
+
+def query_dailywire_paragraphs(query, database = 'mongodb',strength=0.1):
+    if database == 'mongodb':
+        fm = feedsmanagement()
+        data = fm.getfeeds()
+        for item in data:
+            text=''
+            contents = item['content']
+            for content in contents:
+                text += clearhtml(content['value'])
+            item['ptext'] = text
+    elif database == 'file':
+        with open('dailywirearticles.json') as f:
+            data = []
+            jsonload = json.load(f)
+            for item in jsonload:
+                data.append(jsonload[item])
+                contents = jsonload[item]['content']
+                text = ''
+                for content in contents:
+                    text += clearhtml(content['value'])
+                jsonload[item]['ptext'] = text
+                content = jsonload[item]['content'][0]['value']
+                soup = BeautifulSoup(content, 'html.parser')
+                jsonload[item]['paragraphs'] = []
+                for res in soup.find_all('p'):
+                    jsonload[item]['paragraphs'].append(res.text)
+    articles=[]
+    for item in data:
+        articles.extend([(item,x) for x in item['paragraphs']])
+    query = [query]
+    va = TfidfVectorizer(stop_words='english', analyzer='word')
+    va_vec = va.fit_transform([x[1] for x in articles])
+    vq_vec = va.transform(query)
+
+    cosine_similiarity = cosine_similarity(va_vec,vq_vec)
+    enum_cs = enumerate(cosine_similiarity)
+    enum_cs = sorted(enum_cs, key=lambda x: x[1], reverse=True)
+    res = [(articles[enum_cs[i][0]][0]['title'],
+            articles[enum_cs[i][0]][0]['author'],
+            articles[enum_cs[i][0]][0]['link'],
+            articles[enum_cs[i][0]][1]) for i in range(len(enum_cs)) if enum_cs[i][1] > strength]
+    counts = defaultdict(lambda: 0)
+    for r in res:
+        counts[r[0]] += 1
+    counts = [(key, value) for key, value in sorted(counts.items(), key=lambda item: item[1], reverse=True)]
+    result = []
+    for count in counts[0:3]:
+        if count[1] >= 4:
+            for r in res:
+                if count[0] == r[0]:
+                    result.append(r)
+                    break
+    return result
 
 def clearhtml(text):
     soup = BeautifulSoup(text, 'html.parser')
@@ -52,4 +121,5 @@ def daily_wire_rss():
                 text += i.text
             articles.append((entry['title'], i.text))
 
-query_daily_wire('Biden lost to the Taliban')
+#query_daily_wire('Biden lost to the Taliban',database='file')
+#print(query_dailywire_paragraphs('Biden lost to the Taliban',database='file'))

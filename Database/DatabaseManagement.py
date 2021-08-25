@@ -99,3 +99,44 @@ class feedsmanagement:
         if isinstance(element, Comment):
             return False
         return True
+
+
+# Python Program for
+# demonstrating the
+# PyMongo Cursor to JSON
+
+def export_rssentries():
+    # Importing required modules
+    from pymongo import MongoClient
+    from bson.json_util import dumps, loads
+
+    # Connecting to MongoDB server
+    # client = MongoClient('host_name',
+    # 'port_number')
+    info = json.load(open("../MONGODB"))
+    client = MongoClient(info['hostname'], info['port'])
+
+    # Connecting to the database named
+    # GFG
+    mydatabase = client.rssdata
+
+    # Accessing the collection named
+    # gfg_collection
+    mycollection = mydatabase.rssentries
+
+    # Now creating a Cursor instance
+    # using find() function
+    cursor = mycollection.find()
+
+    # Converting cursor to the list
+    # of dictionaries
+    list_cur = list(cursor)
+
+    # Converting to the JSON
+    json_data = dumps(list_cur, indent=2)
+
+    # Writing data to file data.json
+    with open('dailywiredata.json', 'w') as file:
+        file.write(json_data)
+
+export_rssentries()

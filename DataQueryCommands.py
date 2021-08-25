@@ -28,7 +28,7 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="covid_statistics")
+    @commands.command(name="covid_statistics", help='type: {imageplot,imagetable} country[US] startdate[year-month-day] enddate[year-month-day] {new_cases,new_deaths}')
     async def covid_statistics(self, ctx, *args):
         outputtype = args[0]
         country = args[1]
@@ -55,10 +55,10 @@ class data_query_commands(commands.Cog):
                 await ctx.send(embed=embed)
                 await ctx.send(file=image)
 
-    @commands.command(name="find_articles")
+    @commands.command(name="dw")
     async def find_daily_wire_articles(self, ctx: commands.context, *args):
         query = args[0]
-        results = query_daily_wire(query)
+        results = query_daily_wire(query,database = 'file')
         if results:
             for res in results[0:2]:
                 embed = Embed(title=res[0], url=res[2], description=res[3][0:500],
