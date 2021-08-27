@@ -121,5 +121,11 @@ def daily_wire_rss():
                 text += i.text
             articles.append((entry['title'], i.text))
 
+def update_database():
+    rss = 'https://www.dailywire.com/feeds/rss.xml'
+    feed = feedparser.parse(rss)
+    fm = feedsmanagement()
+    fm.addfeed(feed)
+
 #query_daily_wire('Biden lost to the Taliban',database='file')
 #print(query_dailywire_paragraphs('Biden lost to the Taliban',database='file'))
