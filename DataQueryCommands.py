@@ -8,15 +8,15 @@ class data_query_commands(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
 
-    @commands.command(name="kitten")
+    @commands.command(name="kitten", help = 'picture of a cute little kitten')
     async def kitten(self, ctx: commands.context):
-        with open('Data/kitten_blog.jpg', 'rb') as f:
+        with open('Data/Kittens/kitten_blog.jpg', 'rb') as f:
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="puppy")
+    @commands.command(name="puppy", help = 'Picture of a cute little puppy!')
     async def kitten(self, ctx: commands.context):
-        with open('Data/dog.jpg', 'rb') as f:
+        with open('Data/Puppies/dog.JPG', 'rb') as f:
             picture = File(f)
             await ctx.send(file=picture)
 
@@ -55,9 +55,13 @@ class data_query_commands(commands.Cog):
                 await ctx.send(embed=embed)
                 await ctx.send(file=image)
 
-    @commands.command(name="dw")
+    @commands.command(name="dw", help = 'Type #%dw {search phrase} to search any daily wire articels')
     async def find_daily_wire_articles(self, ctx: commands.context, *args):
-        query = args[0]
+        if len(args) == 1:
+            query = args[0]
+        else:
+            query = ' '.join(args)
+
         results = query_daily_wire(query,database = 'file')
         if results:
             for res in results[0:2]:
