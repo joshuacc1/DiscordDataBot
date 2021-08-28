@@ -12,6 +12,7 @@ import discord
 # import datetime
 
 from discord.ext import commands
+from Database.DatabaseManagement import messagesmanagement
 from dailywirequery import query_daily_wire, query_dailywire_paragraphs
 from discord import Embed, Color
 
@@ -83,11 +84,14 @@ bot.load_extension('DataQueryCommands')
 #             await ctx.send(embed=embed)
 #             await ctx.send(file=image)
 #
-# @bot.event
-# async def on_message(message):
-#     if message.author == bot.user:
-#         return None
-#     print(message.author, message.content, bot.user, client.guilds)
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return None
+    mm = messagesmanagement()
+    mm.addmessage(str(message.author),str(message.content))
+    print(message.author, message.content, bot.user, client.guilds)
+    await bot.process_commands(message)
     # results = query_dailywire_paragraphs(message.content,database = 'file',strength = 0.1)
     # if results:
     #     await message.channel.send(str(message.author) + " said something that reminded me of a dailywire articles: ")

@@ -17,6 +17,22 @@ class datalink:
     def __exit__(self, type, value, traceback):
         self.client.close()
 
+class messagesmanagement:
+    def __init__(self):
+        self.database = 'serverdata'
+        self.collection = 'messages'
+
+    def addmessage(self, author, message):
+        with datalink(self.database,self.collection) as db:
+            db.insert_one({'author':author,'message':message})
+
+    def getmessage(self, in_message: str = ''):
+        with datalink(self.database,self.collection) as db:
+            if in_message:
+                return list(db.find({'message':{'$regex': ''.join(["*.",in_message,".*"])}}))
+            else:
+                return list(db.find({}))
+
 class linksmanagement:
     def __init__(self):
         self.database = datalink('rssdata','rsslinks')
@@ -113,7 +129,7 @@ def export_rssentries():
     # Connecting to MongoDB server
     # client = MongoClient('host_name',
     # 'port_number')
-    info = json.load(open("../MONGODB"))
+    info = json.load(open("MONGODB"))
     client = MongoClient(info['hostname'], info['port'])
 
     # Connecting to the database named
@@ -139,4 +155,4 @@ def export_rssentries():
     with open('dailywiredata.json', 'w') as file:
         file.write(json_data)
 
-export_rssentries()
+#export_rssentries()
