@@ -1,3 +1,5 @@
+import os
+from random import choice
 
 from discord.ext import commands
 from discord import File, Embed, Color
@@ -10,13 +12,17 @@ class data_query_commands(commands.Cog):
 
     @commands.command(name="kitten", help = 'picture of a cute little kitten')
     async def kitten(self, ctx: commands.context):
-        with open('Data/Kittens/kitten_blog.jpg', 'rb') as f:
+        filenames = os.listdir(os.getcwd() + "\\Data\\Kittens")
+        filechoice = choice(filenames)
+        with open('Data/Kittens/' + filechoice, 'rb') as f:
             picture = File(f)
             await ctx.send(file=picture)
 
     @commands.command(name="puppy", help = 'Picture of a cute little puppy!')
-    async def kitten(self, ctx: commands.context):
-        with open('Data/Puppies/dog.JPG', 'rb') as f:
+    async def puppy(self, ctx: commands.context):
+        filenames = os.listdir(os.getcwd() + "\\Data\\Puppies")
+        filechoice = choice(filenames)
+        with open('Data/Puppies/' + filechoice, 'rb') as f:
             picture = File(f)
             await ctx.send(file=picture)
 
