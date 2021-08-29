@@ -26,6 +26,14 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
+    @commands.command(name="dwcpet", help = 'Picture of a cute little puppy!')
+    async def dwcpet(self, ctx: commands.context):
+        filenames = os.listdir(os.getcwd() + "\\Data\\Pets")
+        filechoice = choice(filenames)
+        with open('Data/Pets/' + filechoice, 'rb') as f:
+            picture = File(f)
+            await ctx.send(file=picture)
+
     @commands.command(name="police_shootings", help='To query, type {from year, to year, column a, column b, ...} from available columns Year,White_armed,White_unarmed,Black_armed,Black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
     async def get_police_shooting_data(self, ctx: commands.context, *args):
         res = querypoliceshooting(*args)
