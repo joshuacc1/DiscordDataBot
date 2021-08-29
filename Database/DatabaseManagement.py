@@ -22,9 +22,12 @@ class messagesmanagement:
         self.database = 'serverdata'
         self.collection = 'messages'
 
-    def addmessage(self, author, message):
+    def addmessage(self, author: str, message: str, guild_name: str = '', channel: str = ''):
         with datalink(self.database,self.collection) as db:
-            db.insert_one({'author':author,'message':message})
+            db.insert_one({'author':author,
+                           'message':message,
+                           'guild': guild_name,
+                           'channel': channel})
 
     def getmessage(self, in_message: str = ''):
         with datalink(self.database,self.collection) as db:
