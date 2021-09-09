@@ -1,4 +1,5 @@
 import os
+import re
 from random import choice
 
 from discord.ext import commands
@@ -26,7 +27,7 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="pet", help = 'Bot will pick a random pet without any commands\n'
+    @commands.command(name="pets", help = 'Bot will pick a random pet without any commands\n'
                                          'Add your pet with the picture\n'
                                          'add {petname} {file attachments}\n'
                                          'Get the tagged members pets\n'
@@ -44,8 +45,12 @@ class data_query_commands(commands.Cog):
                         if not all([any([x.filename.endswith(_type) for _type in _types]) for x in ctx.message.attachments]):
                             await ctx.send("Please send png, jpg, or gif files only.")
                         else:
-                            owner = str(ctx.message.author.id)
-                            petname = ' '.join(args[1:])
+                            if args[1] == 'tagowner':
+                                owner = str(re.search('<@!(.*)>', args[2]).group(1))
+                                petname = ' '.join(args[4:])
+                            else:
+                                owner = str(ctx.message.author.id)
+                                petname = ' '.join(args[1:])
                             for attachment in ctx.message.attachments:
                                 if '%%' in attachment.filename:
                                     fname = attachment.filename.replace('%%', '')
@@ -64,7 +69,7 @@ class data_query_commands(commands.Cog):
                         if len(info) >= 3:
                             ownerid = info[0]
                             petname = info[1]
-                            if ownerid == str(ctx.message.author.id):
+                            if ownerid == str(re.search('<@!(.*)>',args[1]).group(1)):
                                 f = open("Data/Pets/" + filename, 'rb')
                                 picture = File(f)
                                 await ctx.send('Meet ' + petname, file=picture)
@@ -84,7 +89,7 @@ class data_query_commands(commands.Cog):
                             await ctx.send('Meet ' + petname, file=picture)
 
         else:
-            filenames = os.listdir(os.getcwd() + "\\Data\\Pets")
+            filenames = os.listdir(os.getcwd() + "/Data/Pets")
             filechoice = choice(filenames)
             with open('Data/Pets/' + filechoice, 'rb') as f:
                 picture = File(f)
