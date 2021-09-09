@@ -26,13 +26,69 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="dwcpet", help = 'Picture of a cute little puppy!')
-    async def dwcpet(self, ctx: commands.context):
-        filenames = os.listdir(os.getcwd() + "\\Data\\Pets")
-        filechoice = choice(filenames)
-        with open('Data/Pets/' + filechoice, 'rb') as f:
-            picture = File(f)
-            await ctx.send(file=picture)
+    @commands.command(name="pet", help = 'Bot will pick a random pet without any commands\n'
+                                         'Add your pet with the picture\n'
+                                         'add {petname} {file attachments}\n'
+                                         'Get the tagged members pets\n'
+                                         'owner {tag member}\n'
+                                         'gets your pets\n'
+                                         'mypets')
+    async def dwcpet(self, ctx: commands.context, *args):
+        if args:
+            if args[0].lower() == "add":
+                if not len(args) >= 2:
+                    await ctx.send("Please specify your pets name. i.e. #%dwcpet add bingo")
+                else:
+                    if ctx.message.attachments:
+                        _types = ['png','gif','jpg']
+                        if not all([any([x.filename.endswith(_type) for _type in _types]) for x in ctx.message.attachments]):
+                            await ctx.send("Please send png, jpg, or gif files only.")
+                        else:
+                            owner = str(ctx.message.author.id)
+                            petname = ' '.join(args[1:])
+                            for attachment in ctx.message.attachments:
+                                if '%%' in attachment.filename:
+                                    fname = attachment.filename.replace('%%', '')
+                                else:
+                                    fname = attachment.filename
+
+                                await attachment.save(os.getcwd() + '/Data/Pets/' + owner + '%%' + petname + '%%' + fname)
+
+            if args[0].lower() == 'owner':
+                if not len(args) == 2:
+                    await ctx.send("Please specify the pet owners name. i.e. #%dwcpet owner john")
+                else:
+                    filenames = os.listdir(os.getcwd() + "/Data/Pets")
+                    for filename in filenames:
+                        info = filename.split('%%')
+                        if len(info) >= 3:
+                            ownerid = info[0]
+                            petname = info[1]
+                            if ownerid == str(ctx.message.author.id):
+                                f = open("Data/Pets/" + filename, 'rb')
+                                picture = File(f)
+                                await ctx.send('Meet ' + petname, file=picture)
+
+            if args[0].lower() == 'mypets':
+                filenames = os.listdir(os.getcwd() + "/Data/Pets")
+                filternames = []
+                for filename in filenames:
+                    info = filename.split('%%')
+                    if len(info) >= 3:
+                        ownerid = info[0]
+                        petname = info[1]
+                        if ownerid == str(ctx.message.author.id):
+                            filternames.append(filename)
+                            f = open("Data/Pets/" + filename, 'rb')
+                            picture = File(f)
+                            await ctx.send('Meet ' + petname, file=picture)
+
+        else:
+            filenames = os.listdir(os.getcwd() + "\\Data\\Pets")
+            filechoice = choice(filenames)
+            with open('Data/Pets/' + filechoice, 'rb') as f:
+                picture = File(f)
+                await ctx.send(file=picture)
 
     @commands.command(name="police_shootings", help='To query, type {from year, to year, column a, column b, ...} from available columns Year,White_armed,White_unarmed,Black_armed,Black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
     async def get_police_shooting_data(self, ctx: commands.context, *args):

@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Comment
 from requests import request
 import json
+from discord.message import Message
 
 class datalink:
     def __init__(self,databasename, databasecollection):
@@ -22,12 +23,23 @@ class messagesmanagement:
         self.database = 'serverdata'
         self.collection = 'messages'
 
-    def addmessage(self, author: str, message: str, guild_name: str = '', channel: str = ''):
-        with datalink(self.database,self.collection) as db:
-            db.insert_one({'author':author,
-                           'message':message,
-                           'guild': guild_name,
-                           'channel': channel})
+    def addmessage(self, message: Message):
+
+        if message.reference:
+            refmessdict = {'message_id': message.reference.message_id,
+                           'channel_id': message.reference.channel_id,
+                           'guild_id': message.reference.guild_id}
+            if message.reference.resolved:
+                refmessdict['reply_message'] = message.reference.resolved.content
+        else:
+            refmessdict = {}
+        with datalink(self.database, self.collection) as db:
+            db.insert_one({'message_id': message.id,
+                           'author': str(message.author),
+                           'message': message.content,
+                           'guild': str(message.guild),
+                           'channel': str(message.channel),
+                           **refmessdict})
 
     def getmessage(self, in_message: str = ''):
         with datalink(self.database,self.collection) as db:

@@ -89,8 +89,12 @@ async def on_message(message):
     if message.author == bot.user:
         return None
     mm = messagesmanagement()
-    mm.addmessage(str(message.author),str(message.content), str(message.guild.name), str(message.channel))
-    print(message.author, message.content, message.guild.name, message.channel)
+    mm.addmessage(message)
+
+    # print(message.id, message.author, message.content, message.guild.name, message.channel, message.reference)
+    # if message.reference:
+    #     print(message.reference.message_id
+    #       ,message.reference.channel_id,message.reference.guild_id, message.reference.resolved.content)
     await bot.process_commands(message)
     # results = query_dailywire_paragraphs(message.content,database = 'file',strength = 0.1)
     # if results:
