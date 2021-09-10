@@ -27,7 +27,7 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="pets", help = 'Bot will pick a random pet without any commands\n'
+    @commands.command(name="testpets", help = 'Bot will pick a random pet without any commands\n'
                                          'Add your pet with the picture\n'
                                          'add {petname} {file attachments}\n'
                                          'Get the tagged members pets\n'
@@ -58,6 +58,7 @@ class data_query_commands(commands.Cog):
                                     fname = attachment.filename
 
                                 await attachment.save(os.getcwd() + '/Data/Pets/' + owner + '%%' + petname + '%%' + fname)
+                                await ctx.send('Successfully uploaded pet!')
 
             if args[0].lower() == 'owner':
                 if not len(args) == 2:
@@ -91,8 +92,23 @@ class data_query_commands(commands.Cog):
         else:
             filenames = os.listdir(os.getcwd() + "/Data/Pets")
             filechoice = choice(filenames)
+            info = filechoice.split('%%')
+            petname = ''
+            owner = ''
+            if len(info) >= 3:
+                petname = info[1]
+                ownerid = info[0]
+                for member in ctx.message.guild.members:
+                    if str(member.id) == ownerid:
+                        owner = member.display_name
             with open('Data/Pets/' + filechoice, 'rb') as f:
                 picture = File(f)
+                hstr = ''
+                if petname:
+                    hstr += 'Meet ' + petname
+                    if owner:
+                        hstr += ' who\'s owned by ' + owner
+                    await ctx.send(hstr)
                 await ctx.send(file=picture)
 
     @commands.command(name="police_shootings", help='To query, type {from year, to year, column a, column b, ...} from available columns Year,White_armed,White_unarmed,Black_armed,Black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
