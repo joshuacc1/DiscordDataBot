@@ -27,7 +27,7 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="testpets", help = 'Bot will pick a random pet without any commands\n'
+    @commands.command(name="pets", help = 'Bot will pick a random pet without any commands\n'
                                          'Add your pet with the picture\n'
                                          'add {petname} {file attachments}\n'
                                          'Get the tagged members pets\n'
@@ -64,16 +64,15 @@ class data_query_commands(commands.Cog):
                 if not len(args) == 2:
                     await ctx.send("Please specify the pet owners name. i.e. #%dwcpet owner john")
                 else:
-                    filenames = os.listdir(os.getcwd() + "/Data/Pets")
-                    for filename in filenames:
-                        info = filename.split('%%')
-                        if len(info) >= 3:
-                            ownerid = info[0]
-                            petname = info[1]
-                            if ownerid == str(re.search('<@!(.*)>',args[1]).group(1)):
-                                f = open("Data/Pets/" + filename, 'rb')
-                                picture = File(f)
-                                await ctx.send('Meet ' + petname, file=picture)
+                    if args[1].startswith('<@'):
+                        taggedowner = str(re.search('<@(.*)>',args[1]).group(1))
+                        if taggedowner.startswith('!'):
+                            taggedowner = taggedowner[1:]
+                    else:
+                        taggedowner = ''
+                    results = self.query_file(taggedowner)
+                    for result in results:
+                        await ctx.send('Meet ' + result[1], file=result[0])
 
             if args[0].lower() == 'mypets':
                 filenames = os.listdir(os.getcwd() + "/Data/Pets")
@@ -89,6 +88,13 @@ class data_query_commands(commands.Cog):
                             picture = File(f)
                             await ctx.send('Meet ' + petname, file=picture)
 
+            if args[0].startswith('<@'):
+                taggedowner = str(re.search('<@(.*)>', args[0]).group(1))
+                if taggedowner.startswith('!'):
+                    taggedowner = taggedowner[1:]
+                results = self.query_file(taggedowner)
+                for result in results:
+                    await ctx.send('Meet ' + result[1], file=result[0])
         else:
             filenames = os.listdir(os.getcwd() + "/Data/Pets")
             filechoice = choice(filenames)
@@ -110,6 +116,21 @@ class data_query_commands(commands.Cog):
                         hstr += ' who\'s owned by ' + owner
                     await ctx.send(hstr)
                 await ctx.send(file=picture)
+
+    def query_file(self, taggedowner):
+        res = []
+        filenames = os.listdir(os.getcwd() + "/Data/Pets")
+        for filename in filenames:
+            info = filename.split('%%')
+            if len(info) >= 3:
+                ownerid = info[0]
+                petname = info[1]
+                if ownerid == taggedowner:
+                    f = open("Data/Pets/" + filename, 'rb')
+                    picture = File(f)
+                    res.append((picture,petname))
+        return res
+
 
     @commands.command(name="police_shootings", help='To query, type {from year, to year, column a, column b, ...} from available columns Year,White_armed,White_unarmed,Black_armed,Black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
     async def get_police_shooting_data(self, ctx: commands.context, *args):
