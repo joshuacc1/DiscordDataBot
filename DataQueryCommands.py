@@ -11,7 +11,7 @@ class data_query_commands(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
 
-    @commands.command(name="kitten", help = 'picture of a cute little kitten')
+    @commands.command(name="kitten", help = 'Posts a picture of a kitten.')
     async def kitten(self, ctx: commands.context):
         filenames = os.listdir(os.getcwd() + "\\Data\\Kittens")
         filechoice = choice(filenames)
@@ -19,7 +19,7 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="puppy", help = 'Picture of a cute little puppy!')
+    @commands.command(name="puppy", help = 'Posts a picture of a puppy')
     async def puppy(self, ctx: commands.context):
         filenames = os.listdir(os.getcwd() + "\\Data\\Puppies")
         filechoice = choice(filenames)
@@ -27,12 +27,14 @@ class data_query_commands(commands.Cog):
             picture = File(f)
             await ctx.send(file=picture)
 
-    @commands.command(name="pets", help = 'Bot will pick a random pet without any commands\n'
+    @commands.command(name="pets", help = 'This bot will show pictures of your pet.\n\n'
+                                         'Bot will pick a random pet without any commands\n\n'
                                          'Add your pet with the picture\n'
-                                         'add {petname} {file attachments}\n'
+                                         'add {pet name} {attach file}\n\n'
                                          'Get the tagged members pets\n'
-                                         'owner {tag member}\n'
-                                         'gets your pets\n'
+                                         '{tag member}\n'
+                                         'owner {tag member}\n\n'
+                                         'Get all your pet pictures.\n'
                                          'mypets')
     async def dwcpet(self, ctx: commands.context, *args):
         if args:
