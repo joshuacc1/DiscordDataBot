@@ -32,8 +32,8 @@ async def on_message(message):
         return None
     mm = messagesmanagement()
     mm.addmessage(message)
-    if message.author.id == 564219418482311169:
-        await message.channel.send("Mr. Markarama is the best")
+    # if message.author.id == 564219418482311169:
+    #     await message.channel.send("Mr. Markarama is the best")
 
     # print(message.id, message.author, message.content, message.guild.name, message.channel, message.reference)
     # if message.reference:

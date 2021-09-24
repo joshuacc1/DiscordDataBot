@@ -134,14 +134,13 @@ def collect_new_daily_wire_articles():
     coll = client.get_database('rssdata').get_collection('rssentries')
     results = list(coll.find({'posted': {'$exists':False}}))
     for result in results:
-        coll.update_one({'link':result['link']}, {'$set': {'posted':True}})
+        coll.update_many({'link':result['link']}, {'$set': {'posted':True}})
 
     res = [(i['title'],
             i['author'],
             i['link'],
             clearhtml(i['content'][0]['value'])) for i in results]
     return res
-
 
 def update_database():
     rss = 'https://www.dailywire.com/feeds/rss.xml'

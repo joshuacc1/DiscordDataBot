@@ -94,8 +94,7 @@ class feedsmanagement:
                     status = db.update_one({'id': entry['id'],
                                         'author': entry['author'],
                                        'title': entry['title']},
-                                       {'$set': entry},
-                                        True)
+                                       {'$set': entry})
 
     def getfeeds(self, category=None):
         _filter = {}
