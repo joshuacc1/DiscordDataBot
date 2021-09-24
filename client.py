@@ -32,6 +32,8 @@ async def on_message(message):
         return None
     mm = messagesmanagement()
     mm.addmessage(message)
+    if message.author.id == 564219418482311169:
+        await message.channel.send("Mr. Markarama is the best")
 
     # print(message.id, message.author, message.content, message.guild.name, message.channel, message.reference)
     # if message.reference:
@@ -51,6 +53,15 @@ async def on_message(message):
     #     await message.channel.send('George Floyd deserved to die!')
     # await bot.process_commands(message)
 
+import asyncio  # The only thing u need to import
+
+#
+# async def forever():
+#     print('Task Complete')
+#     await asyncio.sleep(15)
+#
+#
+# bot.loop.create_task(forever())
 
 def main(args):
     TOKENKEYFILE=args[1]

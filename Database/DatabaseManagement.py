@@ -91,13 +91,11 @@ class feedsmanagement:
             for entry in feed['entries']:
                 entry['source'] = feed['feed']
                 if 'author' in entry and 'title' in entry:
-
-                    status = db.update({'id': entry['id'],
+                    status = db.update_one({'id': entry['id'],
                                         'author': entry['author'],
                                        'title': entry['title']},
-                                        entry,
+                                       {'$set': entry},
                                         True)
-                    print(status)
 
     def getfeeds(self, category=None):
         _filter = {}

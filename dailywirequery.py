@@ -4,6 +4,7 @@ from collections import defaultdict
 import feedparser
 from bs4 import BeautifulSoup
 from Database.DatabaseManagement import  feedsmanagement
+from pymongo import MongoClient
 import json
 
 def query_daily_wire(query,database='mongodb',strength=0.1):
@@ -120,6 +121,27 @@ def daily_wire_rss():
             for i in soup.find_all('p'):
                 text += i.text
             articles.append((entry['title'], i.text))
+
+def collect_new_daily_wire_articles():
+    f = open("MONGODB", 'r')
+    info = json.load(f)
+    f.close()
+
+    ip = info['hostname']
+    port = int(info['port'])
+
+    client = MongoClient(ip, port)
+    coll = client.get_database('rssdata').get_collection('rssentries')
+    results = list(coll.find({'posted': {'$exists':False}}))
+    for result in results:
+        coll.update_one({'link':result['link']}, {'$set': {'posted':True}})
+
+    res = [(i['title'],
+            i['author'],
+            i['link'],
+            clearhtml(i['content'][0]['value'])) for i in results]
+    return res
+
 
 def update_database():
     rss = 'https://www.dailywire.com/feeds/rss.xml'

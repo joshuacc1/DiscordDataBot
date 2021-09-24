@@ -3,14 +3,33 @@ import re
 import time
 from random import choice
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import File, Embed, Color
 from Data import *
-from dailywirequery import query_daily_wire
+from dailywirequery import query_daily_wire, collect_new_daily_wire_articles, update_database
+
+PUBLISH_CHANNEL_ID = 849639790571421746
 
 class data_query_commands(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
+        self.post_articles.start()
+
+    @tasks.loop(minutes=10)
+    async def post_articles(self):
+        channel = await self.bot.fetch_channel(PUBLISH_CHANNEL_ID)
+        update_database()
+        results = collect_new_daily_wire_articles()
+        if results:
+            for res in results:
+                embed = Embed(title=res[0], url=res[2], description=res[3][0:500],
+                              color=Color.blue())
+                embed.set_author(name=res[1], url = "https://www.dailywire.com/author/" + res[1].replace(' ', '-'))
+                await channel.send(embed=embed, delete_after=604800)
+
+    @post_articles.before_loop
+    async def post_post_articles(self):
+        await self.bot.wait_until_ready()
 
     @commands.command(name="kitten", help = 'Posts a picture of a kitten.')
     async def kitten(self, ctx: commands.context):
