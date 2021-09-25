@@ -134,7 +134,7 @@ def collect_new_daily_wire_articles():
     coll = client.get_database('rssdata').get_collection('rssentries')
     results = list(coll.find({'posted': {'$exists':False}}))
     for result in results:
-        coll.update_many({'link':result['link']}, {'$set': {'posted':True}})
+        coll.update_many({'id':result['id']}, {'$set': {'posted':True}})
 
     res = [(i['title'],
             i['author'],
@@ -146,7 +146,7 @@ def update_database():
     rss = 'https://www.dailywire.com/feeds/rss.xml'
     feed = feedparser.parse(rss)
     fm = feedsmanagement()
-    fm.addfeed(feed)
+    return fm.addfeed(feed)
 
 #query_daily_wire('Biden lost to the Taliban',database='file')
 #print(query_dailywire_paragraphs('Biden lost to the Taliban',database='file'))

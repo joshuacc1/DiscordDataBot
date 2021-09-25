@@ -6,7 +6,7 @@ from random import choice
 from discord.ext import commands, tasks
 from discord import File, Embed, Color
 from Data import *
-from dailywirequery import query_daily_wire, collect_new_daily_wire_articles, update_database
+from dailywirequery import query_daily_wire, update_database, clearhtml
 
 PUBLISH_CHANNEL_ID = 849639790571421746
 
@@ -15,11 +15,14 @@ class data_query_commands(commands.Cog):
         self.bot = bot
         self.post_articles.start()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=1)
     async def post_articles(self):
         channel = await self.bot.fetch_channel(PUBLISH_CHANNEL_ID)
-        update_database()
-        results = collect_new_daily_wire_articles()
+        new_articles, update_articles = update_database()
+        results = [(i['title'],
+                i['author'],
+                i['link'],
+                clearhtml(i['content'][0]['value'])) for i in new_articles]
         if results:
             for res in results:
                 embed = Embed(title=res[0], url=res[2], description=res[3][0:500],

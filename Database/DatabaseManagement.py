@@ -87,6 +87,8 @@ class feedsmanagement:
         self.database = datalink('rssdata', 'rssentries')
 
     def addfeed(self, feed):
+        new_articles = []
+        updated_articles = []
         with self.database as db:
             for entry in feed['entries']:
                 entry['source'] = feed['feed']
@@ -94,7 +96,14 @@ class feedsmanagement:
                     status = db.update_one({'id': entry['id'],
                                         'author': entry['author'],
                                        'title': entry['title']},
-                                       {'$set': entry})
+                                       {'$set': entry},
+                                           upsert = True)
+                    if 'upserted' in status.raw_result:
+                        new_articles.append(entry)
+                    elif status.raw_result['nModified'] > 0:
+                        updated_articles.append(entry)
+        return new_articles, updated_articles
+
 
     def getfeeds(self, category=None):
         _filter = {}
