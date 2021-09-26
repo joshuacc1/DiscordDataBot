@@ -7,6 +7,7 @@ from discord.ext import commands, tasks
 from discord import File, Embed, Color
 from Data import *
 from dailywirequery import query_daily_wire, update_database, clearhtml
+from Database.DatabaseManagement import MemberManagement
 
 PUBLISH_CHANNEL_ID = 849639790571421746
 
@@ -18,6 +19,7 @@ class data_query_commands(commands.Cog):
     @tasks.loop(minutes=1)
     async def post_articles(self):
         channel = await self.bot.fetch_channel(PUBLISH_CHANNEL_ID)
+        MM = MemberManagement()
         new_articles, update_articles = update_database()
         results = [(i['title'],
                 i['author'],
@@ -28,6 +30,13 @@ class data_query_commands(commands.Cog):
                 embed = Embed(title=res[0], url=res[2], description=res[3][0:500],
                               color=Color.blue())
                 embed.set_author(name=res[1], url = "https://www.dailywire.com/author/" + res[1].replace(' ', '-'))
+                for subscriber in MM.service_database('Daily_Wire'):
+                    if any([tag.lower() in res[0].lower() for tag in  subscriber['tags']]) or \
+                       any([author.lower() in res[1].lower() for author in  subscriber['author']]):
+                        user = await self.bot.fetch_user(subscriber['member'])
+                        if not user:
+                            continue
+                        await user.send(embed=embed)
                 await channel.send(embed=embed, delete_after=604800)
 
     @post_articles.before_loop
@@ -213,6 +222,59 @@ class data_query_commands(commands.Cog):
                 embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
                 await ctx.send(embed=embed)
                 await ctx.send(file=image)
+
+    @commands.group(name="subscribe", help="DM's you Daily Wire Articles that match author or keywords of your choice")
+    async def subscribe_daily_wire_articles(self, ctx: commands.context):
+        if ctx.invoked_subcommand is None:
+            pass
+
+    @subscribe_daily_wire_articles.group(name='tags', help='DM daily wire articles that have keywords in title')
+    async def subscribe_daily_wire_articles_tags(self, ctx: commands.context):
+        if ctx.invoked_subcommand is None:
+            member_id = ctx.author.id
+            MM = MemberManagement()
+            result = MM.get_service(member_id,'Daily_Wire')
+            await ctx.send(', '.join(result['tags']))
+
+    @subscribe_daily_wire_articles_tags.command(name="add", help = 'Adds the keyword')
+    async def subscribe_daily_wire_articles_tags_add(self, ctx: commands.context, *args):
+        member_id = ctx.author.id
+        keyword = ' '.join(args) if len(args) > 1 else args[0]
+        MM = MemberManagement()
+        MM.add_service(member_id,'Daily_Wire', {'$addToSet': {'tags': keyword}})
+        await ctx.send('Added ' + keyword + ' keyword to subscription filter.')
+
+    @subscribe_daily_wire_articles_tags.command(name="remove", help = 'Removes the keyword')
+    async def subscribe_daily_wire_articles_tags_remove(self, ctx: commands.context, *args):
+        member_id = ctx.author.id
+        keyword = ' '.join(args) if len(args) > 1 else args[0]
+        MM = MemberManagement()
+        MM.add_service(member_id,'Daily_Wire', {'$pull': {'tags': keyword}})
+        await ctx.send('Remove ' + keyword + ' keyword from subscription filter.')
+
+    @subscribe_daily_wire_articles.group(name='author', help = 'DM daily wire articles by author')
+    async def subscribe_daily_wire_articles_author(self, ctx: commands.context):
+        if ctx.invoked_subcommand is None:
+            member_id = ctx.author.id
+            MM = MemberManagement()
+            result = MM.get_service(member_id,'Daily_Wire')
+            await ctx.send(', '.join(result['author']))
+
+    @subscribe_daily_wire_articles_author.command(name="add", help = "Adds an author")
+    async def subscribe_daily_wire_articles_author_add(self, ctx: commands.context, *args):
+        member_id = ctx.author.id
+        keyword = ' '.join(args) if len(args) > 1 else args[0]
+        MM = MemberManagement()
+        MM.add_service(member_id,'Daily_Wire', {'$addToSet': {'author': keyword}})
+        await ctx.send('Added ' + keyword + ' author to subscription.')
+
+    @subscribe_daily_wire_articles_author.command(name="remove", help = "Removes an author")
+    async def subscribe_daily_wire_articles_author_remove(self, ctx: commands.context, *args):
+        member_id = ctx.author.id
+        keyword = ' '.join(args) if len(args) > 1 else args[0]
+        MM = MemberManagement()
+        MM.add_service(member_id,'Daily_Wire', {'$pull': {'author': keyword}})
+        await ctx.send('Removed ' + keyword + ' author from subscription.')
 
     @commands.command(name="dw", help = 'Type #%dw {search phrase} to search any daily wire articels')
     async def find_daily_wire_articles(self, ctx: commands.context, *args):

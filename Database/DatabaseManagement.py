@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Comment
 from requests import request
 import json
+import os
 from discord.message import Message
 
 class datalink:
@@ -136,6 +137,22 @@ class feedsmanagement:
         if isinstance(element, Comment):
             return False
         return True
+
+class MemberManagement:
+    def __init__(self):
+        self.database = 'serverdata'
+
+    def add_service(self, member_id, service, params):
+        with datalink(self.database,service) as dl:
+            dl.update_one({'member':member_id}, params, upsert=True)
+
+    def get_service(self, member_id, service):
+        with datalink(self.database, service) as dl:
+            return dl.find_one({'member':member_id})
+
+    def service_database(self, service):
+        with datalink(self.database, service) as dl:
+            return list(dl.find({}))
 
 
 # Python Program for
