@@ -1,25 +1,11 @@
 import sys
 
 import discord
-# import matplotlib.dates
-# import pandas
-# import numpy
-# from bokeh.io import export_png, export_svgs
-# from bokeh.models import ColumnDataSource, DataTable, TableColumn
-# import matplotlib.pyplot as plt
-# import json
-# import urllib.request
-# import datetime
 
 from discord.ext import commands
 from Database.DatabaseManagement import messagesmanagement
-from dailywirequery import query_daily_wire, query_dailywire_paragraphs
-from discord import Embed, Color
 
 client = discord.Client()
-# GUILD = "Prometheus's server"
-# TOKEN = ''
-
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(intents=intents, command_prefix='#%')
@@ -40,28 +26,6 @@ async def on_message(message):
     #     print(message.reference.message_id
     #       ,message.reference.channel_id,message.reference.guild_id, message.reference.resolved.content)
     await bot.process_commands(message)
-    # results = query_dailywire_paragraphs(message.content,database = 'file',strength = 0.1)
-    # if results:
-    #     await message.channel.send(str(message.author) + " said something that reminded me of a dailywire articles: ")
-    #     for res in results[0:2]:
-    #         embed = Embed(title=res[0], url=res[2], description=res[3][0:500],
-    #                       color=Color.blue())
-    #         embed.set_author(name=res[1], url="https://www.dailywire.com/author/" + res[1].replace(' ', '-'))
-    #         await message.channel.send(embed=embed)
-
-    # if message.content.startswith('George Floyd'):
-    #     await message.channel.send('George Floyd deserved to die!')
-    # await bot.process_commands(message)
-
-import asyncio  # The only thing u need to import
-
-#
-# async def forever():
-#     print('Task Complete')
-#     await asyncio.sleep(15)
-#
-#
-# bot.loop.create_task(forever())
 
 def main(args):
     TOKENKEYFILE=args[1]

@@ -237,7 +237,7 @@ class data_query_commands(commands.Cog):
         if ctx.invoked_subcommand is None:
             pass
 
-    @subscribe_daily_wire_articles.group(name='tags', help='DM daily wire articles that have keywords in title')
+    @subscribe_daily_wire_articles.group(name='keywords', help='DM daily wire articles that have keywords in title')
     async def subscribe_daily_wire_articles_tags(self, ctx: commands.context):
         if ctx.invoked_subcommand is None:
             member_id = ctx.author.id
