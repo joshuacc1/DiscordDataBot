@@ -31,8 +31,17 @@ class data_query_commands(commands.Cog):
                               color=Color.blue())
                 embed.set_author(name=res[1], url = "https://www.dailywire.com/author/" + res[1].replace(' ', '-'))
                 for subscriber in MM.service_database('Daily_Wire'):
-                    if any([tag.lower() in res[0].lower() for tag in  subscriber['tags']]) or \
-                       any([author.lower() in res[1].lower() for author in  subscriber['author']]):
+                    if 'author' in subscriber:
+                        authorflag = any([author.lower() in res[1].lower() for author in  subscriber['author']])
+                    else:
+                        authorflag = False
+
+                    if 'tags' in subscriber:
+                        tagsflag = any([tag.lower() in res[0].lower() for tag in  subscriber['tags']])
+                    else:
+                        tagsflag = False
+
+                    if tagsflag or authorflag:
                         user = await self.bot.fetch_user(subscriber['member'])
                         if not user:
                             continue
