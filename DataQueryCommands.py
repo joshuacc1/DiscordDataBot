@@ -52,6 +52,17 @@ class data_query_commands(commands.Cog):
     async def post_post_articles(self):
         await self.bot.wait_until_ready()
 
+    @commands.command(name='xp_item')
+    async def respond_to_mee6(self, ctx: commands.context, *args):
+        if ctx.message.author.id == 159985870458322944:
+            amount = args[1]
+            if args[0].startswith('<@'):
+                taggedowner = str(re.search('<@(.*)>', args[0]).group(1))
+                if taggedowner.startswith('!'):
+                    taggedowner = int(taggedowner[1:])
+            member = await ctx.guild.fetch_member(taggedowner)
+            await ctx.send(f"!give_xp {member.mention} {amount}")
+
     @commands.command(name="kitten", help = 'Posts a picture of a kitten.')
     async def kitten(self, ctx: commands.context):
         filenames = os.listdir(os.getcwd() + "\\Data\\Kittens")
@@ -244,6 +255,8 @@ class data_query_commands(commands.Cog):
             MM = MemberManagement()
             result = MM.get_service(member_id,'Daily_Wire')
             await ctx.send(', '.join(result['tags']))
+
+
 
     @subscribe_daily_wire_articles_tags.command(name="add", help = 'Adds the keyword')
     async def subscribe_daily_wire_articles_tags_add(self, ctx: commands.context, *args):
