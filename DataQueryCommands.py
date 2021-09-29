@@ -54,7 +54,7 @@ class data_query_commands(commands.Cog):
 
     @commands.command(name='xp_item')
     async def respond_to_mee6(self, ctx: commands.context, *args):
-        if ctx.message.author.id == 159985870458322944:
+        if ctx.message.author.id == 851246358559981608:
             amount = args[1]
             if args[0].startswith('<@'):
                 taggedowner = str(re.search('<@(.*)>', args[0]).group(1))
