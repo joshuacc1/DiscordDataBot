@@ -18,7 +18,10 @@ class data_query_commands(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def post_articles(self):
-        channel = await self.bot.fetch_channel(PUBLISH_CHANNEL_ID)
+    	try:
+        	channel = await self.bot.fetch_channel(PUBLISH_CHANNEL_ID)
+	except:
+		return None
         MM = MemberManagement()
         new_articles, update_articles = update_database()
         results = [(i['title'],
