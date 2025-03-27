@@ -10,6 +10,18 @@ class pets(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
 
+    def query_file(self, taggedowner):
+        res = []
+        filenames = os.listdir(os.getcwd() + "/Data/Pets")
+        for filename in filenames:
+            info = filename.split('%%')
+            if len(info) >= 3:
+                ownerid = info[0]
+                petname = info[1]
+                if ownerid == taggedowner:
+                    res.append(("Data/Pets/" + filename, petname))
+        return res
+
     @commands.command(name="kitten", help = 'Posts a picture of a kitten.')
     async def kitten(self, ctx: commands.context):
         filenames = os.listdir(os.getcwd() + "\\Data\\Kittens")
@@ -143,5 +155,4 @@ class pets(commands.Cog):
             await ctx.send('Please specify the pet name for pictures you want to remove')
 
 async def setup(bot: commands.Bot):
-    print('Pets Setup initiated')
     await bot.add_cog(pets(bot))
