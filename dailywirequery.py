@@ -1,5 +1,5 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.metrics.pairwise import cosine_similarity
 from collections import defaultdict
 import feedparser
 from bs4 import BeautifulSoup
@@ -142,11 +142,26 @@ def collect_new_daily_wire_articles():
             clearhtml(i['content'][0]['value'])) for i in results]
     return res
 
+# def update_database():
+#     rss = 'https://www.dailywire.com/feeds/rss.xml'
+#     feed = feedparser.parse(rss)
+#     fm = feedsmanagement()
+#     return fm.addfeed(feed)
+
 def update_database():
     rss = 'https://www.dailywire.com/feeds/rss.xml'
     feed = feedparser.parse(rss)
-    fm = feedsmanagement()
-    return fm.addfeed(feed)
+    for entry in feed['entries']:
+        entry['source'] = feed['feed']
+        if 'author' in entry and 'title' in entry:
+                                # status = db.update_one({'id': entry['id'],
+                                #         'author': entry['author'],
+                                #        'title': entry['title']},
+                                #        {'$set': entry},
+                                #            upsert = True)
+            print(entry['id'],entry['author'],entry['title'])
+
+update_database()
 
 #query_daily_wire('Biden lost to the Taliban',database='file')
 #print(query_dailywire_paragraphs('Biden lost to the Taliban',database='file'))

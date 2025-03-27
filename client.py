@@ -1,16 +1,23 @@
 import sys
 
 import discord
+import tracemalloc
 
 from discord.ext import commands
 from Database.DatabaseManagement import messagesmanagement
 
-client = discord.Client()
+tracemalloc.start()
+
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(intents=intents, command_prefix='#%')
+intents.message_content = True
 
-bot.load_extension('DataQueryCommands')
+bot = commands.Bot(intents=intents, command_prefix='$$')
+@bot.event
+async def on_ready():
+    #await bot.load_extension('DataQueryCommands')
+    await bot.load_extension('pets_extension')
+    print("loaded Extensions")
 
 @bot.event
 async def on_message(message):
@@ -18,9 +25,6 @@ async def on_message(message):
         return None
     mm = messagesmanagement()
     mm.addmessage(message)
-
-
-
     # if message.author.id == 564219418482311169:
     #     await message.channel.send("Mr. Markarama is the best")
 
