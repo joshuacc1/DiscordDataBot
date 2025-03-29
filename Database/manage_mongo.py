@@ -17,10 +17,12 @@ def database_info():
 
 class ManageClient:
     def __init__(self):
-        self.info = json.load(open("MONGODB"))
+        with open("SERVERPARAMS",'r') as f:
+            server_params = json.load(f)
+            self.info = server_params['mongodb']
         
     def __enter__(self):
-        self.client = MongoClient(self.info['hostname'],self.info['port'])
+        self.client = MongoClient(self.info['host'],self.info['port'])
         return self.client
 
     def __exit__(self, type, value, traceback):

@@ -1,0 +1,13 @@
+{"mongodb":{
+    "host":"localhost","port":27017
+            },
+"token": "",
+"databases":{
+            "daily_wire":{
+                "database":"my_server_database","collection":"articles","channel":99999999999999},
+            "subscribers":{
+                "database":"my_server_database","collection":"subscribers"},
+            "messages":{
+                "database":"my_server_database","collection":"messages"}
+            }
+}

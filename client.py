@@ -17,6 +17,7 @@ bot = commands.Bot(intents=intents, command_prefix='$$')
 @bot.event
 async def on_ready():
     #await bot.load_extension('DataQueryCommands')
+    await bot.load_extension('data_query_extension')
     await bot.load_extension('daily_wire_extension')
     await bot.load_extension('pets_extension')
     print("loaded Extensions")
