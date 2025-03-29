@@ -2,14 +2,18 @@ from pymongo import MongoClient, DESCENDING
 import json
 
 def database_info():
-    mongo_server_info = {'port': 27017, 'host': 'localhost'}
-    client = MongoClient(mongo_server_info['host'], mongo_server_info['port'])
+    # with open("MONGODB", 'r') as f:
+    #     info = json.load(f)
+    with open("SERVERPARAMS",'r') as f:
+        params = json.load(f)
+        info = params['mongodb']
+    client = MongoClient(info['host'], info['port'])
     db_list = client.list_database_names()
     for db in db_list:
-        print(db)
+        print(f"database: {db}")
         for coll in client[db].list_collection_names():
-            print("-->",coll)
-            print(client[db][coll].count_documents({}), " total documents")
+            print(f"{db}.{coll}: ",client[db][coll].count_documents({}), " total documents")
+        print("\n")
 
 class ManageClient:
     def __init__(self):
@@ -46,7 +50,7 @@ def remove_database(database_name):
 
 if __name__=="__main__":
     # get_client()
-    database_info()
+    #database_info()
     # print("\nadding collection\n")
     # coll = get_collection('server_data','links')
     # coll.insert_one({'name':'test'})
@@ -54,7 +58,7 @@ if __name__=="__main__":
     # print("\nremoving collection\n")
     # remove_collection('server_data','links')
     # database_info()
-    # remove_database('server_data')
     #remove_database('test_server_data')
-    # database_info()
+    #remove_database('test_server_data')
+    database_info()
     # print("done")

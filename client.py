@@ -1,10 +1,11 @@
 import sys
+import json
 
 import discord
 import tracemalloc
 
 from discord.ext import commands
-from Database.DatabaseManagement import messagesmanagement
+from Database.messages import addmessage
 
 tracemalloc.start()
 
@@ -16,6 +17,7 @@ bot = commands.Bot(intents=intents, command_prefix='$$')
 @bot.event
 async def on_ready():
     #await bot.load_extension('DataQueryCommands')
+    await bot.load_extension('daily_wire_extension')
     await bot.load_extension('pets_extension')
     print("loaded Extensions")
 
@@ -23,8 +25,16 @@ async def on_ready():
 async def on_message(message):
     if message.author == bot.user:
         return None
-    mm = messagesmanagement()
-    mm.addmessage(message)
+    if message.reference:
+        refmessdict = {'message_id': message.reference.message_id,
+                        'channel_id': message.reference.channel_id,
+                        'guild_id': message.reference.guild_id}
+        if message.reference.resolved:
+            refmessdict['reply_message'] = message.reference.resolved.content
+    else:
+        refmessdict = {}
+
+    addmessage(message.id, str(message.author),message.content,str(message.guild),str(message.channel),refmessdict)
     # if message.author.id == 564219418482311169:
     #     await message.channel.send("Mr. Markarama is the best")
 
@@ -35,10 +45,13 @@ async def on_message(message):
     await bot.process_commands(message)
 
 def main(args):
-    TOKENKEYFILE=args[1]
-    with open(TOKENKEYFILE, 'r') as f:
-        global TOKEN
-        TOKEN = f.readline()
+    with open("SERVERPARAMS",'r') as f:
+        server_params = json.load(f)
+        TOKEN = server_params['token']
+    # TOKENKEYFILE=args[1]
+    # with open(TOKENKEYFILE, 'r') as f:
+    #     global TOKEN
+    #     TOKEN = f.readline()
     bot.run(TOKEN)
 
 if __name__=="__main__":

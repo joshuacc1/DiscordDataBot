@@ -65,20 +65,6 @@ class data_query_commands(commands.Cog):
                 taggedowner = int(taggedowner[1:])
         member = await ctx.guild.fetch_member(taggedowner)
         await ctx.send(f"!give_xp {member.mention} {amount}")
-
-
-    
-    def query_file(self, taggedowner):
-        res = []
-        filenames = os.listdir(os.getcwd() + "/Data/Pets")
-        for filename in filenames:
-            info = filename.split('%%')
-            if len(info) >= 3:
-                ownerid = info[0]
-                petname = info[1]
-                if ownerid == taggedowner:
-                    res.append(("Data/Pets/" + filename, petname))
-        return res
     
     @commands.command(name="police_shootings", help='To query, type {from year, to year, column a, column b, ...} from available columns Year,White_armed,White_unarmed,Black_armed,Black_unarmed,Hispanic_armed,Hispanic_unarmed,A_armed,N_armed,O_armed,NA_armed,N_unarmed,O_unarmed,A_unarmed,NA_unarmed')
     async def get_police_shooting_data(self, ctx: commands.context, *args):
