@@ -135,16 +135,18 @@ def update_database():
         dict: A dictionary containing lists of new and updated feeds.
     """
     # Load database parameters
-    with open("MONGODB", 'r') as f:
-        info = json.load(f)
+    with open("SERVERPARAMS", 'r') as f:
+        server_params = json.load(f)
+        info = server_params['mongodb']
 
     # RSS feed URL
     rss = 'https://www.dailywire.com/feeds/rss.xml'
     feed = feedparser.parse(rss)
 
     # Connect to MongoDB
-    client = MongoClient(info['hostname'], info['port'])  # Replace with your MongoDB connection details
-    db = client[DATABASE][COLLECTION]
+    client = MongoClient(info['host'], info['port'])
+    database_info = server_params['databases']['daily_wire']
+    db = client[database_info['database']][database_info['collection']]
 
     new_feeds = []
     updated_feeds = []

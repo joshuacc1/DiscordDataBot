@@ -9,9 +9,6 @@ with open('SERVERPARAMS') as f:
     DATABASE = database_info['database']
     COLLECTION = database_info['collection']
 
-# DATABASE = 'test_server_data'
-# COLLECTION = 'test_subscribers'
-
 def add_keyword(member_id, keyword):
     with ManageClient() as client:
         db = client[DATABASE][COLLECTION]
@@ -72,8 +69,9 @@ def get_subscribers_with_match(text):
         result = db.find()
         members = []
         for res in result:
-            if any([keyword in text for keyword in  res['keywords']]):
-                members.append(res['member'])
+            if 'keyword' in res:
+                if any([keyword in text for keyword in  res['keywords']]):
+                    members.append(res['member'])
         return members
 
 def get_subscribers_with_author(input_author):

@@ -12,14 +12,23 @@ tracemalloc.start()
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-
+intents.guilds = True
 bot = commands.Bot(intents=intents, command_prefix='$$')
+
 @bot.event
 async def on_ready():
-    #await bot.load_extension('DataQueryCommands')
-    await bot.load_extension('data_query_extension')
-    await bot.load_extension('daily_wire_extension')
     await bot.load_extension('pets_extension')
+    await bot.load_extension('daily_wire_extension')
+    await bot.load_extension('data_query_extension')
+    await bot.load_extension('test_interaction_extension')
+    #guild = discord.Object(id=835332146137923596)
+    synced = await bot.tree.sync()  # Sync slash commands with Discord
+    print(f"Synced commands: {[command.name for command in synced]}")  # Debugging
+    #print(f"Bot is ready and slash commands are synced for guild {guild.id}!")
+    #await bot.load_extension('DataQueryCommands')
+    #await bot.load_extension('data_query_extension')
+    #await bot.load_extension('daily_wire_extension')
+    #await bot.load_extension('pets_extension')
     print("loaded Extensions")
 
 @bot.event

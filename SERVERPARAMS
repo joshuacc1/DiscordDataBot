@@ -4,10 +4,10 @@
 "token": "",
 "databases":{
             "daily_wire":{
-                "database":"my_server_database","collection":"articles","channel":99999999999999},
+                "database":"server_data","collection":"articles","channel":99999999999999},
             "subscribers":{
-                "database":"my_server_database","collection":"subscribers"},
+                "database":"server_data","collection":"subscribers"},
             "messages":{
-                "database":"my_server_database","collection":"messages"}
+                "database":"server_data","collection":"messages"}
             }
 }
