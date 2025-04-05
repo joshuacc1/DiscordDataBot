@@ -143,12 +143,6 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200):
         except:
             font = ImageFont.load_default()
 
-        try:
-            font_owner = ImageFont.truetype("arial.ttf", title_font_size)
-            font_owner = load_font(font_path, title_font_size)
-        except:
-            font_owner = ImageFont.load_default()
-
         labeled_images = []
         for path in image_paths:
             # Open and resize
@@ -170,7 +164,6 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200):
             # Create a new image with space for the label
             labeled = Image.new("RGB", (tile_size, tile_size + label_height), color=(0, 0,0))
             if original_height > original_width:
-                print(size/2 - new_width/2)
                 labeled.paste(img, (int(size/2 - new_width/2), 0))
             else:
                 labeled.paste(img, (int(size/2 - new_width/2), 0))
@@ -179,7 +172,7 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200):
             draw = ImageDraw.Draw(labeled)
             img_info = path.split("%%")
             petname = img_info[1]
-            label = os.path.splitext(os.path.basename(petname))[0]  # filename without extension
+            label = petname # os.path.splitext(os.path.basename(petname))[0]  # filename without extension
             text_width = draw.textlength(label, font=font)
             text_x = (tile_size - text_width) // 2
             draw.text((text_x, tile_size), label, fill=(255, 255, 255), font=font)
@@ -200,15 +193,15 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200):
             y = (index // columns) * (tile_size + label_height) + label_height
             tiled.paste(img, (x, y))
 
-        # Add a label over the entire tiled image
+        # # Add a label over the entire tiled image
         final_image = Image.new("RGB", (grid_width, grid_height + label_height), color=(0, 0, 0))
-        draw = ImageDraw.Draw(final_image)
-        text_width = draw.textlength(owner_name, font=font_owner)
-        text_x = (grid_width - text_width) // 2
-        draw.text((text_x, 0), owner_name, fill=(255, 255, 255), font=font_owner)
+        # draw = ImageDraw.Draw(final_image)
+        # text_width = draw.textlength(owner_name, font=font_owner)
+        # text_x = (grid_width - text_width) // 2
+        # draw.text((text_x, 0), owner_name, fill=(255, 255, 255), font=font_owner)
 
         # Paste the tiled image below the label
-        final_image.paste(tiled, (0, 2*label_height))
+        final_image.paste(tiled, (0, 0))
 
         buffer = BytesIO()
         final_image.save(buffer, format="PNG")
@@ -239,6 +232,6 @@ def get_files_in_folder(folder_path):
 
 
 # image_paths = get_files_in_folder("Data/Pets")
-# image_paths = [x for x in image_paths if "1232292579866050667" in x]
-# #pictures_into_tiles(image_paths[4:8],(100,100))
-# pictures_into_tiles_owner("Owner_name",image_paths, (100,100))
+# image_paths = [x for x in image_paths if "720142714103922738" in x]
+# # #pictures_into_tiles(image_paths[4:8],(100,100))
+#pictures_into_tiles_owner("Owner_name",image_paths,400)

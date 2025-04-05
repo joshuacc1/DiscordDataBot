@@ -151,6 +151,9 @@ def update_database():
     new_feeds = []
     updated_feeds = []
 
+    entries = db.find({}, {"id": 1, "_id": 0}).sort("_id", -1).limit(60)
+    existing_ids = [entry['id'] for entry in entries][::-1]
+
     # Iterate through RSS feed entries
     for entry in feed['entries']:
         # Prepare the feed data
@@ -166,7 +169,7 @@ def update_database():
         }
 
         # Check if the feed already exists in the database
-        existing_feed = db.find_one({'id': entry['id']})
+        existing_feed = entry['id'] in existing_ids
 
         if existing_feed:
             # Check if the feed has been updated
