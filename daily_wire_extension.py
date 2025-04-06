@@ -7,8 +7,22 @@ class daily_wire_feeds(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
         self.post_articles.start()
+        self.check_for_new_articles.start()
+        self.new_articles = []
 
-    @tasks.loop(minutes=5)
+    @tasks.loop(minutes=3)
+    async def check_for_new_articles(self):
+        articles = await update_database()
+        new_articles = articles['new_feeds']
+        updated_articles = articles['updated_feeds']  
+        if new_articles:
+            self.new_articles = [(i['title'],
+                i['author'],
+                i['link'],
+                clearhtml(i['content'][0]['value'])) for i in new_articles]
+            print(f"new articles found {len(self.new_articles)}")
+
+    @tasks.loop(minutes=1)
     async def post_articles(self):
         try:
             with open('SERVERPARAMS') as f:
@@ -19,28 +33,27 @@ class daily_wire_feeds(commands.Cog):
             print("channel not found")
             return None
         
-        articles = update_database()
-        new_articles = articles['new_feeds']
-        updated_articles = articles['updated_feeds']
+        # articles = update_database()
+        # new_articles = articles['new_feeds']
+        # updated_articles = articles['updated_feeds']
 
-        results = [(i['title'],
-                i['author'],
-                i['link'],
-                clearhtml(i['content'][0]['value'])) for i in new_articles]
-        
-        if results:
-            for res in results:
-                embed = Embed(title=res[0], url=res[2], description=res[3][0:500],
-                                color=Color.blue())
-                embed.set_author(name=res[1], url = "https://www.dailywire.com/author/" + res[1].replace(' ', '-'))
-                members = get_subscribers_with_match(res[0])
-                members.extend(get_subscribers_with_author(res[1]))
-                for member in members:
-                    user = await self.bot.fetch_user(member)
-                    if not user:
-                        continue
-                    await user.send(embed=embed)
-                await channel.send(embed=embed, delete_after=604800)
+        # results = [(i['title'],
+        #         i['author'],
+        #         i['link'],
+        #         clearhtml(i['content'][0]['value'])) for i in new_articles]
+        while(self.new_articles):
+            res = self.new_articles.pop(0)
+            embed = Embed(title=res[0], url=res[2], description=res[3][0:500],
+                            color=Color.blue())
+            embed.set_author(name=res[1], url = "https://www.dailywire.com/author/" + res[1].replace(' ', '-'))
+            members = get_subscribers_with_match(res[0])
+            members.extend(get_subscribers_with_author(res[1]))
+            for member in members:
+                user = await self.bot.fetch_user(member)
+                if not user:
+                    continue
+                await user.send(embed=embed)
+            await channel.send(embed=embed, delete_after=604800)
 
     @commands.group(name="subscribe", help="DM's you Daily Wire Articles that match author or keywords of your choice")
     async def subscribe_daily_wire_articles(self, ctx: commands.context):

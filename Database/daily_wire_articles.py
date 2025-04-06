@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient
 import json
 from datetime import datetime
+from motor.motor_asyncio import AsyncIOMotorClient
 
 with open('SERVERPARAMS') as f:
     server_params = json.load(f)
@@ -127,7 +128,7 @@ def daily_wire_rss():
                 text += i.text
             articles.append((entry['title'], i.text))
 
-def update_database():
+def update_database_bak():
     """
     Fetches RSS feeds and updates the database with new and updated feeds.
 
@@ -176,6 +177,71 @@ def update_database():
             if feed_data != existing_feed:
                 # Update the existing feed in the database
                 db.update_one({'id': entry['id']}, {'$set': feed_data})
+                updated_feeds.append(feed_data)
+        else:
+            # Insert the new feed into the database
+            db.insert_one(feed_data)
+            new_feeds.append(feed_data)
+
+    # Close the MongoDB connection
+    client.close()
+
+    # Reverse the order of the feeds
+    new_feeds = list(reversed(new_feeds))
+    updated_feeds = list(reversed(updated_feeds))
+
+    # Return the lists of new and updated feeds
+    return {'new_feeds': new_feeds, 'updated_feeds': updated_feeds}
+
+async def update_database():
+    """
+    Asynchronous version of update_database.
+    Fetches RSS feeds and updates the database with new and updated feeds.
+    """
+    with open("SERVERPARAMS", 'r') as f:
+        server_params = json.load(f)
+        info = server_params['mongodb']
+
+    # Connect to MongoDB using Motor (asynchronous MongoDB driver)
+    client = AsyncIOMotorClient(info['host'], info['port'])
+    db = client[database_info['database']][database_info['collection']]
+
+    # Perform asynchronous database operations
+    entries_cursor = db.find({}, {"id": 1, "_id": 0}).sort("_id", -1).limit(60)
+    entries = await entries_cursor.to_list(length=60)  # Convert cursor to a list asynchronously
+
+    # Process entries (e.g., compare with RSS feed)
+    # ... other asynchronous operations ...
+    # RSS feed URL
+    rss = 'https://www.dailywire.com/feeds/rss.xml'
+    feed = feedparser.parse(rss)
+    existing_ids = [entry['id'] for entry in entries][::-1]
+
+    new_feeds = []
+    updated_feeds = []
+    # Iterate through RSS feed entries
+    for entry in feed['entries']:
+        # Prepare the feed data
+        feed_data = {
+            'id': entry['id'],
+            'author': entry.get('author', 'Unknown'),
+            'title': entry['title'],
+            'link': entry['link'],
+            'content': entry.get('content', []),
+            'source': feed['feed'],
+            'published': entry.get('published', None),
+            'updated': entry.get('updated', None)
+        }
+
+        # Check if the feed already exists in the database
+        existing_feed = entry['id'] in existing_ids
+
+
+        if existing_feed:
+            # Check if the feed has been updated
+            if feed_data != existing_feed:
+                # Update the existing feed in the database
+                await db.update_one({'id': entry['id']}, {'$set': feed_data})
                 updated_feeds.append(feed_data)
         else:
             # Insert the new feed into the database

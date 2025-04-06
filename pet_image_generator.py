@@ -126,13 +126,14 @@ def pictures_into_tiles_all(image_paths, size):
     except Exception as e:
         print(f"{e}")
 
-def pictures_into_tiles_owner(owner_name, picture_data, size = 200):
+def pictures_into_tiles_owner(owner_name, picture_data, size = 200, show_image = False):
     image_paths = picture_data
     try:
         tile_size = size
-        font_size = 12
+        font_size = 14
         title_font_size = 20
-        label_height = 15  # extra space under each tile for the label
+        label_height = 18  # extra space under each tile for the label
+        border_thickness = 5  # Thickness of the border around each tile
 
         # Load font (fallback to default if unavailable)
         font_path = "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"  # Adjust path as needed
@@ -159,14 +160,33 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200):
                 new_height = int(original_height * percentage)
                 new_width = size
             
-            img = fimg.resize((new_width, new_height))
+            img = fimg.resize((new_width - 2 * border_thickness, new_height - 2* border_thickness))
+            
+            # Create a new image with space for the label and border
+            framed = Image.new(
+                "RGB",
+                (new_width, new_height),
+                color=(230, 230, 230),
+            )
+
+            framed.paste(img, (border_thickness, border_thickness))
+
+            labeled = Image.new(
+                "RGB",
+                (tile_size, tile_size + label_height),
+                color=(0, 0, 0),
+            )
+
+            # Paste the resized image inside the border
+            #labeled.paste(img, (border_thickness + (tile_size - new_width) // 2, border_thickness))
             
             # Create a new image with space for the label
-            labeled = Image.new("RGB", (tile_size, tile_size + label_height), color=(0, 0,0))
+            #labeled = Image.new("RGB", (tile_size, tile_size + label_height), color=(0, 0,0))
+
             if original_height > original_width:
-                labeled.paste(img, (int(size/2 - new_width/2), 0))
+                labeled.paste(framed, (int(size/2 - new_width/2), 0))
             else:
-                labeled.paste(img, (int(size/2 - new_width/2), 0))
+                labeled.paste(framed, (0, int(size/2 - new_height/2)))
 
             # Add the label
             draw = ImageDraw.Draw(labeled)
@@ -206,7 +226,8 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200):
         buffer = BytesIO()
         final_image.save(buffer, format="PNG")
         buffer.seek(0)
-        #final_image.show()
+        if show_image:
+            final_image.show()
         return buffer
     except Exception as e:
         print(f"{e}")
@@ -231,7 +252,7 @@ def get_files_in_folder(folder_path):
 
 
 
-# image_paths = get_files_in_folder("Data/Pets")
-# image_paths = [x for x in image_paths if "720142714103922738" in x]
+image_paths = get_files_in_folder("Data/Pets")
+image_paths = [x for x in image_paths if "720142714103922738" in x]
 # # #pictures_into_tiles(image_paths[4:8],(100,100))
-#pictures_into_tiles_owner("Owner_name",image_paths,400)
+pictures_into_tiles_owner("Owner_name",image_paths,400)

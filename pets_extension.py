@@ -1,9 +1,8 @@
 import os
 import re
-import time
 from random import choice
 import discord
-from discord import File, Embed, Color, Interaction, Message, TextStyle, ButtonStyle
+from discord import File, Interaction, TextStyle, ButtonStyle
 from discord.ui import TextInput, Modal, Button, View
 
 from discord.ext import commands
@@ -27,7 +26,6 @@ class AddPetModal(Modal):
         pet_type = self.children[1].value
         pet_description = self.children[2].value
 
-        print(pet_name,pet_type,pet_description)
         # Save the metadata temporarily (you can use a database instead)
         self.bot.pet_metadata[interaction.user.id] = {
             "pet_name": pet_name,
@@ -41,6 +39,41 @@ class AddPetModal(Modal):
             ephemeral=True
         )
 
+class RemovePetModal(Modal):
+    def __init__(self, bot: commands.Bot):
+        super().__init__(title="Remove a Pet")
+        self.bot = bot
+
+        # Add input fields to the modal
+        self.add_item(TextInput(label="Pet Name", placeholder="Enter your pet's name"))
+
+    async def on_submit(self, interaction: Interaction):
+        results = self.query_file(str(interaction.user.id))
+        for result in results:
+            if result[1] == self.children[0].value:
+                with open(result[0], 'rb') as f:
+                    picture = File(f)
+                    os.remove(result[0])
+        # pet_name = self.children[0].value
+        # self.bot.remove_pet[interaction.user.id].append(pet_name)
+        await interaction.response.send_message(
+            "Removed pet",
+            file=picture,
+            ephemeral=True
+        )
+    
+    def query_file(self, taggedowner):
+        res = []
+        filenames = os.listdir(os.getcwd() + "/Data/Pets")
+        for filename in filenames:
+            info = filename.split('%%')
+            if len(info) >= 3:
+                ownerid = info[0]
+                petname = info[1]
+                if ownerid == taggedowner:
+                    res.append(("Data/Pets/" + filename, petname))
+        return res
+
 class AddPetButtonView(View):
     def __init__(self, bot: commands.Bot):
         super().__init__()
@@ -51,13 +84,68 @@ class AddPetButtonView(View):
         """Callback for the button to open the modal."""
         modal = AddPetModal(self.bot)
         await interaction.response.send_modal(modal)
+    
+    @discord.ui.button(label="Remove Pet", style=discord.ButtonStyle.primary)
+    async def remove_pet_button(self, interaction: Interaction, button: Button):
+        """Callback for the button to open the modal."""
+        # taggedowner = str(interaction.user.id)
+        # owner = 'a previous guild member'
+        # for member in interaction.guild.members:
+        #     if str(member.id) == taggedowner:
+        #         owner = member.display_name
+        
+        # filenames = get_files_in_folder("Data/Pets")
+        # files = [x for x in filenames if str(taggedowner) in x]
+        # buffer = pictures_into_tiles_owner(owner,files)
+        # picture = discord.File(buffer, filename="labeled_grid.png")
+
+        model = RemovePetModal(self.bot)
+        await interaction.response.send_modal(model)
+        #await interaction.response.send_message("Removed Pet", file=picture)
+
+    @discord.ui.button(label="Show My Pets", style=discord.ButtonStyle.primary)
+    async def show_my_pets_button(self, interaction: Interaction, button: Button):
+        """Callback for the button to open the modal."""
+        taggedowner = str(interaction.user.id)
+        owner = 'a previous guild member'
+        for member in interaction.guild.members:
+            if str(member.id) == taggedowner:
+                owner = member.display_name
+        
+        filenames = get_files_in_folder("Data/Pets")
+        files = [x for x in filenames if str(taggedowner) in x]
+        buffer = pictures_into_tiles_owner(owner,files)
+        picture = discord.File(buffer, filename="labeled_grid.png")
+        await interaction.response.send_message("", file=picture)
+
+    @discord.ui.button(label="Show Random Member's Pets", style=discord.ButtonStyle.primary)
+    async def show_random_pet_button(self, interaction: Interaction, button: Button):
+        """Callback for the button to open the modal."""
+        filenames = get_files_in_folder("Data/Pets")
+        owners = []
+        for filename in [x.split("/")[-1] for x in filenames]:
+            info = filename.split('%%')
+            if len(info) >= 3:
+                ownerid = info[0]
+                owners.append(ownerid)
+        random_member = choice(owners)
+        taggedowner = str(random_member)
+        owner = 'a previous guild member'
+        for member in interaction.guild.members:
+            if str(member.id) == taggedowner:
+                owner = member.display_name
+        
+        files = [x for x in filenames if str(taggedowner) in x]
+        buffer = pictures_into_tiles_owner(owner,files)
+        picture = discord.File(buffer, filename="labeled_grid.png")
+        await interaction.response.send_message(f"Meet the pets of {owner}", file=picture)
 
 class pets(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
         self.bot.pet_metadata = {}  # Temporary storage for pet metadata
 
-    @commands.command(name="addpetform", help="Opens a form to add a pet.")
+    @commands.command(name="addnewpet", help="Opens a form to add a pet.")
     async def add_pet_form(self, ctx: commands.Context):
         """Command to send a button that opens the modal form for adding a pet."""
         view = AddPetButtonView(self.bot)
@@ -100,6 +188,8 @@ class pets(commands.Cog):
 
             # Respond to the user
             await message.channel.send(f"Successfully added your pet '{pet_name}'!", file=File(file_path))
+            #await message.ctx.send('Please specify the pet name for pictures you want to remove')
+
 
     def query_file(self, taggedowner):
         res = []
@@ -134,52 +224,9 @@ class pets(commands.Cog):
                                             'To get tagged members pets:\n'
                                             '#%testpets {tag member}')
     async def dwcpet(self, ctx: commands.context):
-        sub_command = ctx.subcommand_passed if ctx.subcommand_passed else ''
-        if ctx.invoked_subcommand is None:
-            if sub_command.startswith('<@'):
-                taggedowner = str(re.search('<@(.*)>', sub_command).group(1))
-                if taggedowner.startswith('!'):
-                    taggedowner = taggedowner[1:]
-                print(taggedowner)
-                owner = 'No Name'
-                for member in ctx.guild.members:
-                    if str(member.id) == taggedowner:
-                        owner = member.display_name
-                
-                filenames = get_files_in_folder("Data/Pets")
-                files = [x for x in filenames if str(taggedowner) in x]
-                print(files)
-                buffer = pictures_into_tiles_owner(owner,files)
-                print(buffer)
-                picture = discord.File(buffer, filename="labeled_grid.png")
-                await ctx.send("", file=picture)
-
-                # results = self.query_file(taggedowner)
-                # for result in results:
-                #     with open(result[0], 'rb') as f:
-                #         picture = File(f)
-                #         await ctx.send('Meet ' + result[1], file=picture)
-            else:
-                filenames = os.listdir(os.getcwd() + "/Data/Pets")
-                filechoice = choice(filenames)
-                info = filechoice.split('%%')
-                petname = ''
-                owner = ''
-                if len(info) >= 3:
-                    petname = info[1]
-                    ownerid = info[0]
-                    for member in ctx.message.guild.members:
-                        if str(member.id) == ownerid:
-                            owner = member.display_name
-                with open('Data/Pets/' + filechoice, 'rb') as f:
-                    picture = File(f)
-                    hstr = ''
-                    if petname:
-                        hstr += 'Meet ' + petname
-                        if owner:
-                            hstr += ' who\'s owned by ' + owner
-                        await ctx.send(hstr)
-                    await ctx.send(file=picture)
+        """Command to send a button that opens the modal form for adding a pet."""
+        view = AddPetButtonView(self.bot)
+        await ctx.send("Pet Panal", view=view, delete_after=60)
 
     @dwcpet.command(name='add', help='Add your pet with the picture\n'
                                      'add {pet name} {attach file}\n')
@@ -208,37 +255,13 @@ class pets(commands.Cog):
                         await attachment.save(os.getcwd() + '/Data/Pets/' + owner + '%%' + petname + '%%' + fname)
                         await ctx.send('Successfully uploaded pet!')
 
-    # @dwcpet.command(name='mypets', help = 'Get all your pet pictures.\n')
-    # async def pets_mypets(self, ctx: commands.context):
-    #     filenames = os.listdir(os.getcwd() + "/Data/Pets")
-    #     filternames = []
-    #     for filename in filenames:
-    #         info = filename.split('%%')
-    #         if len(info) >= 3:
-    #             ownerid = info[0]
-    #             petname = info[1]
-    #             if ownerid == str(ctx.message.author.id):
-    #                 filternames.append(filename)
-    #                 f = open("Data/Pets/" + filename, 'rb')
-    #                 picture = File(f)
-    #                 await ctx.send('Meet ' + petname, file=picture)
-
     @dwcpet.command(name='mypets', help = 'Get all your pet pictures.\n')
     async def pets_mypets(self, ctx: commands.context):
         filenames = get_files_in_folder("Data/Pets")
         files = [x for x in filenames if str(ctx.message.author.id) in x]
-        print(files)
         buffer = pictures_into_tiles_owner(ctx.author.display_name,files)
-        print(buffer)
         picture = discord.File(buffer, filename="labeled_grid.png")
         await ctx.send("", file=picture)
-        # for filename in filenames:
-        #     info = filename.split('%%')
-        #     if len(info) >= 3:
-        #         ownerid = info[0]
-        #         petname = info[1]
-        #         files.append({'filepath':filename,'petname':info[1],'owner':info[0]})
-        # picture_count = len(files)
 
     @dwcpet.command(name = 'owner', help = 'Get the tagged members pets\n'
                                            '{tag member}\n'
@@ -266,7 +289,6 @@ class pets(commands.Cog):
             petname = ' '.join(args)
             owner = str(ctx.message.author.id)
             results = self.query_file(owner)
-            print(results)
             for result in results:
                 if result[1] == petname:
                     with open(result[0], 'rb') as f:
