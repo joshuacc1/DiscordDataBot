@@ -131,7 +131,6 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200, show_image =
     try:
         tile_size = size
         font_size = 14
-        title_font_size = 20
         label_height = 18  # extra space under each tile for the label
         border_thickness = 5  # Thickness of the border around each tile
 
@@ -177,12 +176,6 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200, show_image =
                 color=(0, 0, 0),
             )
 
-            # Paste the resized image inside the border
-            #labeled.paste(img, (border_thickness + (tile_size - new_width) // 2, border_thickness))
-            
-            # Create a new image with space for the label
-            #labeled = Image.new("RGB", (tile_size, tile_size + label_height), color=(0, 0,0))
-
             if original_height > original_width:
                 labeled.paste(framed, (int(size/2 - new_width/2), 0))
             else:
@@ -215,10 +208,6 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200, show_image =
 
         # # Add a label over the entire tiled image
         final_image = Image.new("RGB", (grid_width, grid_height + label_height), color=(0, 0, 0))
-        # draw = ImageDraw.Draw(final_image)
-        # text_width = draw.textlength(owner_name, font=font_owner)
-        # text_x = (grid_width - text_width) // 2
-        # draw.text((text_x, 0), owner_name, fill=(255, 255, 255), font=font_owner)
 
         # Paste the tiled image below the label
         final_image.paste(tiled, (0, 0))

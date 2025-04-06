@@ -20,15 +20,10 @@ async def on_ready():
     await bot.load_extension('pets_extension')
     await bot.load_extension('daily_wire_extension')
     await bot.load_extension('data_query_extension')
-    await bot.load_extension('test_interaction_extension')
+    #await bot.load_extension('test_interaction_extension')
     #guild = discord.Object(id=835332146137923596)
     synced = await bot.tree.sync()  # Sync slash commands with Discord
     print(f"Synced commands: {[command.name for command in synced]}")  # Debugging
-    #print(f"Bot is ready and slash commands are synced for guild {guild.id}!")
-    #await bot.load_extension('DataQueryCommands')
-    #await bot.load_extension('data_query_extension')
-    #await bot.load_extension('daily_wire_extension')
-    #await bot.load_extension('pets_extension')
     print("loaded Extensions")
 
 @bot.event
@@ -45,23 +40,12 @@ async def on_message(message):
         refmessdict = {}
 
     addmessage(message.id, str(message.author),message.content,str(message.guild),str(message.channel),refmessdict)
-    # if message.author.id == 564219418482311169:
-    #     await message.channel.send("Mr. Markarama is the best")
-
-    # print(message.id, message.author, message.content, message.guild.name, message.channel, message.reference)
-    # if message.reference:
-    #     print(message.reference.message_id
-    #       ,message.reference.channel_id,message.reference.guild_id, message.reference.resolved.content)
     await bot.process_commands(message)
 
 def main(args):
     with open("SERVERPARAMS",'r') as f:
         server_params = json.load(f)
         TOKEN = server_params['token']
-    # TOKENKEYFILE=args[1]
-    # with open(TOKENKEYFILE, 'r') as f:
-    #     global TOKEN
-    #     TOKEN = f.readline()
     bot.run(TOKEN)
 
 if __name__=="__main__":
@@ -74,6 +58,3 @@ if __name__=="__main__":
     # data=query_covid_statistics('USA',sdate,edate,['new_cases','new_deaths'])
     # save_df_as_matplotlib_graph(data, 'dataimage.jpg')
     #main(['','TOKEN'])
-#main(sys.argv)
-#client.run(TOKEN)
-#main(['','TOKEN'])

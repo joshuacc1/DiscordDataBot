@@ -88,17 +88,6 @@ class AddPetButtonView(View):
     @discord.ui.button(label="Remove Pet", style=discord.ButtonStyle.primary)
     async def remove_pet_button(self, interaction: Interaction, button: Button):
         """Callback for the button to open the modal."""
-        # taggedowner = str(interaction.user.id)
-        # owner = 'a previous guild member'
-        # for member in interaction.guild.members:
-        #     if str(member.id) == taggedowner:
-        #         owner = member.display_name
-        
-        # filenames = get_files_in_folder("Data/Pets")
-        # files = [x for x in filenames if str(taggedowner) in x]
-        # buffer = pictures_into_tiles_owner(owner,files)
-        # picture = discord.File(buffer, filename="labeled_grid.png")
-
         model = RemovePetModal(self.bot)
         await interaction.response.send_modal(model)
         #await interaction.response.send_message("Removed Pet", file=picture)
@@ -114,7 +103,7 @@ class AddPetButtonView(View):
         
         filenames = get_files_in_folder("Data/Pets")
         files = [x for x in filenames if str(taggedowner) in x]
-        buffer = pictures_into_tiles_owner(owner,files)
+        buffer = pictures_into_tiles_owner(owner,files,400)
         picture = discord.File(buffer, filename="labeled_grid.png")
         await interaction.response.send_message("", file=picture)
 
@@ -136,7 +125,7 @@ class AddPetButtonView(View):
                 owner = member.display_name
         
         files = [x for x in filenames if str(taggedowner) in x]
-        buffer = pictures_into_tiles_owner(owner,files)
+        buffer = pictures_into_tiles_owner(owner,files,400)
         picture = discord.File(buffer, filename="labeled_grid.png")
         await interaction.response.send_message(f"Meet the pets of {owner}", file=picture)
 
