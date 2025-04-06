@@ -117,6 +117,7 @@ class AddPetButtonView(View):
             if len(info) >= 3:
                 ownerid = info[0]
                 owners.append(ownerid)
+        owners = [x for x in owners if x in [str(x.id) for x in interaction.guild.members]]
         random_member = choice(owners)
         taggedowner = str(random_member)
         owner = 'a previous guild member'
