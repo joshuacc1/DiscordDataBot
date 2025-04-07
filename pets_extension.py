@@ -214,9 +214,28 @@ class pets(commands.Cog):
                                             'To get tagged members pets:\n'
                                             '#%testpets {tag member}')
     async def dwcpet(self, ctx: commands.context):
-        """Command to send a button that opens the modal form for adding a pet."""
-        view = AddPetButtonView(self.bot)
-        await ctx.send("Pet Panal", view=view, delete_after=60)
+        """Show someones pets."""
+        sub_command = ctx.subcommand_passed if ctx.subcommand_passed else ''
+        if ctx.invoked_subcommand is None:
+            if sub_command.startswith('<@'):
+                taggedowner = str(re.search('<@(.*)>', sub_command).group(1))
+                if taggedowner.startswith('!'):
+                    taggedowner = taggedowner[1:]
+                print(taggedowner)
+                owner = 'No Name'
+                for member in ctx.guild.members:
+                    if str(member.id) == taggedowner:
+                        owner = member.display_name
+                
+                filenames = get_files_in_folder("Data/Pets")
+                files = [x for x in filenames if str(taggedowner) in x]
+                buffer = pictures_into_tiles_owner(owner,files)
+                picture = discord.File(buffer, filename="labeled_grid.png")
+                await ctx.send("", file=picture)
+            else:
+                """Command to send a button that opens the modal form for adding a pet."""
+                view = AddPetButtonView(self.bot)
+                await ctx.send("Pet Panal", view=view, delete_after=60)
 
     @dwcpet.command(name='add', help='Add your pet with the picture\n'
                                      'add {pet name} {attach file}\n')
