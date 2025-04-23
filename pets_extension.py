@@ -94,18 +94,18 @@ class AddPetButtonView(View):
 
     @discord.ui.button(label="Show My Pets", style=discord.ButtonStyle.primary)
     async def show_my_pets_button(self, interaction: Interaction, button: Button):
-        """Callback for the button to open the modal."""
-        taggedowner = str(interaction.user.id)
-        owner = 'a previous guild member'
-        for member in interaction.guild.members:
-            if str(member.id) == taggedowner:
-                owner = member.display_name
-        
-        filenames = get_files_in_folder("Data/Pets")
-        files = [x for x in filenames if str(taggedowner) in x]
-        buffer = pictures_into_tiles_owner(owner,files,400)
-        picture = discord.File(buffer, filename="labeled_grid.png")
-        await interaction.response.send_message("", file=picture)
+        """Callback for the button to show the user's pets."""
+        await interaction.response.send_message("loading image...")  # Acknowledge the interaction
+
+        # Call the async function to generate the image
+        file_path = await self.generate_pet_image(interaction.user.id, interaction.guild.members)
+        # Send the file as a follow-up message
+        print(file_path)
+        if file_path:
+            picture = discord.File(file_path, filename="labeled_grid.png")
+            await interaction.followup.send("Here are your pets:", file=picture)
+        else:
+            await interaction.followup.send("Failed to generate the image. Please try again.")
 
     @discord.ui.button(label="Show Random Member's Pets", style=discord.ButtonStyle.primary)
     async def show_random_pet_button(self, interaction: Interaction, button: Button):
@@ -120,15 +120,40 @@ class AddPetButtonView(View):
         owners = [x for x in owners if x in [str(x.id) for x in interaction.guild.members]]
         random_member = choice(owners)
         taggedowner = str(random_member)
-        owner = 'a previous guild member'
-        for member in interaction.guild.members:
-            if str(member.id) == taggedowner:
-                owner = member.display_name
-        
-        files = [x for x in filenames if str(taggedowner) in x]
-        buffer = pictures_into_tiles_owner(owner,files,400)
-        picture = discord.File(buffer, filename="labeled_grid.png")
-        await interaction.response.send_message(f"Meet the pets of {owner}", file=picture)
+        """Callback for the button to show the user's pets."""
+        await interaction.response.send_message("loading image...")  # Acknowledge the interaction
+
+        # Call the async function to generate the image
+        file_path = await self.generate_pet_image(random_member, interaction.guild.members)
+        # Send the file as a follow-up message
+        print(file_path)
+        if file_path:
+            picture = discord.File(file_path, filename="labeled_grid.png")
+            await interaction.followup.send("Here are your pets:", file=picture)
+        else:
+            await interaction.followup.send("Failed to generate the image. Please try again.")
+
+    async def generate_pet_image(self, user_id: int, members):
+        """Asynchronous function to generate the pet image."""
+        try:
+            taggedowner = str(user_id)
+            owner = 'a previous guild member'
+            for member in members:
+                if str(member.id) == taggedowner:
+                    owner = member.display_name
+
+            filenames = get_files_in_folder("Data/Pets")
+            files = [x for x in filenames if str(taggedowner) in x]
+
+            # Generate the image and save it to disk
+            file_path = f"Data/Generated/{taggedowner}_labeled_grid.png"
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)  # Ensure the directory exists
+            pictures_into_tiles_owner(owner, files, 200).save(file_path)
+
+            return file_path
+        except Exception as e:
+            print(f"Error generating image: {e}")
+            return None
 
 class pets(commands.Cog):
     def __init__(self, bot: commands.bot):

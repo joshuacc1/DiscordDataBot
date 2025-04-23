@@ -2,8 +2,6 @@ from pymongo import MongoClient, DESCENDING
 import json
 
 def database_info():
-    # with open("MONGODB", 'r') as f:
-    #     info = json.load(f)
     with open("SERVERPARAMS",'r') as f:
         params = json.load(f)
         info = params['mongodb']
@@ -30,7 +28,9 @@ class ManageClient:
             self.client.close()
 
 def get_client():
-    info = json.load(open('MONGODB','r'))
+    with open("SERVERPARAMS",'r') as f:
+        server_params = json.load(f)
+        info = server_params['mongodb']
     client = MongoClient(info['hostname'], info['port'])
     return client
 

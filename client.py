@@ -20,8 +20,6 @@ async def on_ready():
     await bot.load_extension('pets_extension')
     await bot.load_extension('daily_wire_extension')
     await bot.load_extension('data_query_extension')
-    #await bot.load_extension('test_interaction_extension')
-    #guild = discord.Object(id=835332146137923596)
     synced = await bot.tree.sync()  # Sync slash commands with Discord
     print(f"Synced commands: {[command.name for command in synced]}")  # Debugging
     print("loaded Extensions")

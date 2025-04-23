@@ -212,12 +212,12 @@ def pictures_into_tiles_owner(owner_name, picture_data, size = 200, show_image =
         # Paste the tiled image below the label
         final_image.paste(tiled, (0, 0))
 
-        buffer = BytesIO()
-        final_image.save(buffer, format="PNG")
-        buffer.seek(0)
+        #buffer = BytesIO()
+        #final_image.save(buffer, format="PNG")
+        #buffer.seek(0)
         if show_image:
             final_image.show()
-        return buffer
+        return final_image
     except Exception as e:
         print(f"{e}")
 

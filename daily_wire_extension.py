@@ -20,9 +20,8 @@ class daily_wire_feeds(commands.Cog):
                 i['author'],
                 i['link'],
                 clearhtml(i['content'][0]['value'])) for i in new_articles]
-            print(f"new articles found {len(self.new_articles)}")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=3)
     async def post_articles(self):
         try:
             with open('SERVERPARAMS') as f:
@@ -33,14 +32,6 @@ class daily_wire_feeds(commands.Cog):
             print("channel not found")
             return None
         
-        # articles = update_database()
-        # new_articles = articles['new_feeds']
-        # updated_articles = articles['updated_feeds']
-
-        # results = [(i['title'],
-        #         i['author'],
-        #         i['link'],
-        #         clearhtml(i['content'][0]['value'])) for i in new_articles]
         while(self.new_articles):
             res = self.new_articles.pop(0)
             embed = Embed(title=res[0], url=res[2], description=res[3][0:500],

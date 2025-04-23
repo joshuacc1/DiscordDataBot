@@ -7,10 +7,6 @@ with open('SERVERPARAMS') as f:
     DATABASE = database_info['database']
     COLLECTION = database_info['collection']
 
-# DATABASE = 'test_server_data'
-# COLLECTION = 'messages'
- 
-
 def addmessage(message_id, author, message, guild, channel, message_ref):
     with ManageClient() as client:
         db = client[DATABASE][COLLECTION]
